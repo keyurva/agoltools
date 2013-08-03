@@ -1,0 +1,65 @@
+{{define "moreStyles"}}
+<style>
+.folder-info {
+	line-height: 1.5rem;
+	margin-bottom: 1rem;
+	font-size: 1rem;
+}
+.services {
+	padding: 0.25rem;
+	line-height: 1.5rem;
+	font-size: 1rem;
+}
+.service {
+	padding-left: 2rem;
+	word-break: break-all;
+	word-wrap: break-word;
+}
+
+@media(max-width: 767px) {
+	.phone-border {
+		border-bottom: 1px solid #ccc;
+		padding-top: 0.25rem;
+		padding-bottom: 0.25rem;
+	}
+	.service {
+		padding-left: 0;
+	}
+}
+</style>
+{{end}}
+
+{{define "content"}}
+<div class="row-fluid">
+	<div class="span12 folder-info">
+		A new folder named <span class="focus">{{.Data.Folder.Title}}</span> was created in your ArcGIS Online account and 
+		the following services were added to it:
+	</div>
+</div>
+<div class="row-fluid">
+	<div class="span12 focus services">
+		{{$status := .Data.Status}}
+		{{with .Data.Catalog.Services}}
+			<div class="row-fluid">
+				<div class="span7 phone-border">
+					Services ({{. | len}}):
+				</div>
+			</div>
+			{{range .}}
+				<div class="row-fluid">
+					<div class="span6 service">
+						{{printf "%s/%s" .Name .Type}}
+					</div>
+					<div class="span1 phone-border">
+						{{if index $status .Url}}
+							<span class="success">Success</span>
+						{{else}}
+							<span class="failure">Failure</span>
+						{{end}}
+					</div>
+				</div>
+			{{end}}
+		{{end}}
+	</div>
+</div>
+{{end}}

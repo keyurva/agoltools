@@ -1,0 +1,37 @@
+{{define "moreStyles"}}
+<style>
+.error-main, .error-main a {
+	font-size: 1.1rem;
+	line-height: 1.5rem;
+	letter-spacing: 1px;
+}
+.reason {
+	padding: 0.25rem;
+	margin-bottom: 1rem;
+}
+</style>
+{{end}}
+
+{{define "content"}}
+<div class="row-fluid">
+	<div class="span10 muted error-main">
+		<p>
+			Sorry, something bad happened... 
+			{{with .Data.DisplayError}}	
+				This is what we know:		
+				<div class="focus reason">
+					{{.}}
+				</div>
+			{{end}}
+		</p>
+		
+		<p>Your Options</p>
+		<ul>
+			<li><a href="{{.Data.TryAgainUrl}}">Try Again</a></li>
+			<li><a href="{{.Data.IssuesUrl}}">Report An Issue</a></li>
+			<li><a href="/">Try Other Tools</a></li>
+		</ul>
+		<p>Beyond that the web is full of surprises :)</p>
+	</div>
+</div>
+{{end}}

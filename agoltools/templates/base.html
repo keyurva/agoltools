@@ -1,0 +1,41 @@
+{{define "moreStyles"}}{{end}}
+{{define "header"}}{{end}}
+{{define "content"}}{{end}}
+{{define "footer"}}{{end}}
+{{define "moreJS"}}{{end}}
+
+{{define "base"}}
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>{{.Data.PageTitle}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1" />
+    <link rel="icon" type="image/png" id="favicon" href="/img/agoltools.png"/>
+    <link href="/css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="/css/agoltools.css" rel="stylesheet" media="screen">
+    {{template "moreStyles" .}}
+  </head>
+
+  <body>
+
+     <div class="container-fluid">
+	    {{template "header" .}}
+	    {{template "content" .}}
+	    {{template "footer" .}}
+	</div>
+
+    <script src="/js/require-jquery.js"></script>
+    <script type="text/javascript">
+    	require.config({
+    		baseUrl: "/js"
+    	});    	
+    </script>
+    {{template "moreJS" .}}  
+
+  </body>
+</html>
+{{end}}
+
+{{template "base" .}}

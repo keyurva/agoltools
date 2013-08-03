@@ -1,0 +1,6 @@
+{
+	"PortalDomain": "www.arcgis.com",
+	"PortalOrgDomain": "maps.arcgis.com",
+	"AppId": "YOUR_APP_ID_HERE",
+	"AppBaseUrl": "https://agoltools.appspot.com"
+}

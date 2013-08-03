@@ -1,0 +1,94 @@
+{{define "moreStyles"}}
+<style>
+.authinfo {
+	padding: 1rem;
+}
+.failuredetails {
+	padding: 1rem;
+	font-size: 1rem;
+	font-weight: normal;
+	font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+	margin-bottom: 1rem;
+}
+</style>
+{{end}}
+
+{{define "content"}}
+<div class="row-fluid">
+	<div id="authinfo" class="span5 box-rounded authinfo">
+		Signing you in...
+	</div>
+</div>
+{{end}}
+
+{{define "moreJS"}}
+<script id="authfailed" type="text/template">
+	<div>
+		<p>Sorry, we were unable to sign you in</p>
+		<div id="failuredetails" class="box-rounded failuredetails" style="display:none;">
+			<div class="row-fluid">
+				<div class="span12"><b>Error Details</b></div>
+			</div>
+			<div class="row-fluid">
+				<div class="span12">{$error}</div>
+			</div>
+			<div class="row-fluid">
+				<div class="span12">{$desc}</div>
+			</div>
+		</div>
+		<p><a href="/auth/signin">Try again?</a></p>
+	</div>
+</script>
+<script type="text/javascript">
+require(['jquery-cookie'], function() {
+
+	(function($) {
+	var re = /([^&=]+)=?([^&]*)/g;
+	var decodeRE = /\+/g;  // Regex for replacing addition symbol with a space
+	var decode = function (str) {return decodeURIComponent( str.replace(decodeRE, " ") );};
+	$.parseParams = function(query) {
+	    var params = {}, e;
+	    while ( e = re.exec(query) ) { 
+	        var k = decode( e[1] ), v = decode( e[2] );
+	        if (k.substring(k.length - 2) === '[]') {
+	            k = k.substring(0, k.length - 2);
+	            (params[k] || (params[k] = [])).push(v);
+	        }
+	        else params[k] = v;
+	    }
+	    return params;
+	};
+	})(jQuery);
+
+	var hash = "" + window.location.hash,
+	params = $.parseParams(hash.split('#')[1] || ''),
+	$authinfo = $("#authinfo"),
+	$authfailed = $("#authfailed"),
+	handleCallback = function() {
+		if(params.access_token && params.username) {
+			var expSeonds = params.expires_in || 1800;
+			var expires = new Date();
+			expires.setTime(expires.getTime() + (expSeonds * 1000));
+			$.cookie('{{.Data.AuthCookieName}}', JSON.stringify(params), { path: '/', expires: expires });
+			if(params.state && params.state.indexOf("/") == 0) {
+				window.location.assign(params.state);
+				return;
+			}
+			window.location.assign("/");
+			return;
+		}
+		if(params.error && params.error_description) {
+			var authhtml = $authfailed.html();
+			authhtml = authhtml.replace("{$error}", params.error);
+			authhtml = authhtml.replace("{$desc}", params.error_description);
+			$authinfo.html(authhtml);
+			$("#failuredetails").show();
+			return;
+		}
+		$authinfo.html($authfailed.html());
+	};
+
+	handleCallback();
+});
+</script>
+{{end}}

@@ -1,0 +1,25 @@
+application: agoltools
+version: 1
+runtime: go
+api_version: go1
+
+handlers:
+
+- url: /css
+  static_dir: static/css
+  http_headers:
+    Cache-Control: max-age=86400
+
+- url: /js
+  static_dir: static/js
+  http_headers:
+    Cache-Control: max-age=86400
+
+- url: /img
+  static_dir: static/img
+  http_headers:
+    Cache-Control: max-age=86400
+
+- url: /.*
+  script: _go_app
+  secure: always

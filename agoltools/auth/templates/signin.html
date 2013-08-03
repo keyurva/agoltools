@@ -1,0 +1,95 @@
+{{define "moreStyles"}}
+<style>
+.signin-panel {
+	font-size: 1rem;
+	line-height: 2rem;
+	padding: 1rem;
+}
+.public-user {
+	letter-spacing: 1px;
+}
+.signin-or {
+	letter-spacing: 2px;
+	height: 1rem;
+	border-bottom: #ccc solid 1px;
+	margin-bottom: 1rem;
+}
+.or-text {
+	background-color: #f5f5f5;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+.signin-org {
+	letter-spacing: 1px;
+}
+.org-url {
+	vertical-align: baseline;
+	font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+.org-url > input {
+	margin-top: 0.5rem;
+	font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+	font-size: 1rem;
+}
+.org-button {
+	vertical-align: baseline;
+}
+</style>
+{{end}}
+
+{{define "content"}}
+<div class="row-fluid signin-row">
+	<div class="span6 text-center box-rounded signin-panel">
+		<div class="public-user">
+			<a href="{{.Data.PortalAuthorizeUrl}}">Sign in as a Public User</a>
+		</div>
+		<div class="muted signin-or">
+			<span class="or-text">OR</span>
+		</div>
+		<div class="org-user">
+			<div class="signin-org">Sign in to your Organization</div>
+			<div class="org-key">
+				<span class="org-url">
+					https://<input type="text" id="orgkey" class="input-small" placeholder="myorg"/>.{{.Data.PortalOrgDomain}}
+				</span>
+				<button id="orgbtn" class="btn org-button"><i class="icon-chevron-right"></i></button>
+			</div>
+		</div>
+	</div>
+</div>
+{{end}}
+
+{{define "moreJS"}}
+<script type="text/javascript">
+require(['jquery-cookie'], function() {
+	var portalOrgAuthorizeUrlTemplate = '{{.Data.PortalOrgAuthorizeUrlTemplate}}',
+		$orgkey = $("#orgkey"),
+		$orgbtn = $("#orgbtn"),
+		orgkeycookie = $.cookie('agoltools_orgkey'),
+		loadOrgAuthorizeUrl = function() {
+			var orgkey = $orgkey.val().trim();
+			if(orgkey.length > 0) {
+				$.cookie('agoltools_orgkey', orgkey);
+				var authorizeUrl = portalOrgAuthorizeUrlTemplate.replace("{{.Data.OrgKeyTemplate}}", orgkey);
+				window.location.assign(authorizeUrl);
+			}
+		};
+
+	$orgbtn.bind('click', function() {
+		loadOrgAuthorizeUrl();
+	});
+
+	$orgkey.bind('keypress', function(e) {
+		if(e.which == 13) {
+			loadOrgAuthorizeUrl();
+		}
+	});
+
+	if(orgkeycookie) {
+		$orgkey.val(orgkeycookie);
+	}
+
+	$orgkey.focus().val($orgkey.val());
+});
+</script>
+{{end}}
