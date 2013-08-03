@@ -19,7 +19,7 @@ const (
 func addFolderServices(r *agoltools.Request) (err error) {
 	r.Data["PageTitle"] = "Add Folder Services"
 
-	folderUrl := strings.Trim(r.R.FormValue("folderUrl"))
+	folderUrl := strings.Trim(r.R.FormValue("folderUrl"), " ")
 	if folderUrl == "" {
 		return r.RenderUsingBaseTemplate(addFolderServicesTemplate)
 	}
