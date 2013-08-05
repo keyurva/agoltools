@@ -5,7 +5,7 @@ ArcGIS Online is a collection of tools (well, at this time only one :) for your 
 
 The application is hosted on [appengine][appengine] and is available at:
 
-[https://agoltools.appspot.com/][https://agoltools.appspot.com/]
+[https://agoltools.appspot.com/](https://agoltools.appspot.com/)
 
 If you'd like to see a particular tool implemented you can describe and add it [here][issues]. 
 
