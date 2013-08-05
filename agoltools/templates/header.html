@@ -9,9 +9,21 @@
     		Logged in as: <span class="focus">{{.Auth.Username}}</span>
     		|
     		<a href="/auth/signout">Sign Out</a>
-		{{else}}
-			<a href="/auth/signin">Sign in to ArcGIS Online</a>
-    	{{end}}    	
+		  {{else}}
+			 <a href="/auth/signin">Sign in to ArcGIS Online</a>
+    	{{end}}
+      |
+      <span class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" data-target="#" href="">
+          About
+          <i class="icon-chevron-down"></i>
+        </a>
+        <ul class="dropdown-menu pull-right">
+          <li><a href="/about">About</a></li>
+          <li><a href="https://github.com/keyurva/agoltools/issues">Issues</a></li>
+          <li><a href="https://github.com/keyurva/agoltools">Code</a></li>
+        </ul>
+      </span> 	
     </span>
   </div>
 </div>

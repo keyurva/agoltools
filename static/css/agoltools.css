@@ -1,5 +1,7 @@
 body {
 	font-size: 20px;
+	letter-spacing: 1px;
+	line-height: 1.5rem;
 	padding-bottom: 2rem;
 }
 
@@ -13,8 +15,7 @@ body {
 
 .focus {
 	font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-	color: #444;
-	letter-spacing: 1px;	
+	color: #444;	
 	background-color: #f5f5f5;
 	border: 1px solid #ccc;
 	-webkit-border-radius: 4px;
@@ -27,7 +28,6 @@ body {
 .success {
 	font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
 	color: #f5f5f5;
-	letter-spacing: 1px;
 	background-color: #458b74;
 	border: 1px solid #376;
 	-webkit-border-radius: 4px;
@@ -40,7 +40,6 @@ body {
 .failure {
 	font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
 	color: #f5f5f5;
-	letter-spacing: 1px;
 	background-color: #f55555;
 	border: 1px solid #e55;
 	-webkit-border-radius: 4px;
@@ -54,6 +53,7 @@ body {
 	margin-top: 0.5rem;
 	border-bottom: #ccc solid 1px;
 	font-size: 0.7rem;
+	letter-spacing: normal;
 }
 
 .agoltools-header-row [class^="span"] {
@@ -67,4 +67,18 @@ body {
 
 .agoltools-header img {
 	height: 1rem;
+}
+
+.agoltools-header .dropdown i {
+	position:relative;
+	bottom:0.1rem;
+}
+
+.agoltools-header .dropdown ul {
+	min-width:0;
+	letter-spacing:1px;
+}
+
+.agoltools-header .dropdown li a {
+	font-weight: bold;
 }
