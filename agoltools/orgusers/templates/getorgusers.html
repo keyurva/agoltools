@@ -1,0 +1,83 @@
+{{define "moreStyles"}}
+<style>
+.tool-form {
+	padding: 1rem;
+}
+.options {
+	padding-bottom: 1rem;
+}
+.desc {
+	font-size: 0.9rem;
+	line-height: 1.5rem;
+	padding: 0.5rem;
+}
+.hide {
+	display: none;
+}
+#info {
+	padding-left: 0;
+	text-decoration: none;
+}
+</style>
+{{end}}
+
+{{define "content"}}
+<div class="row-fluid">
+	<div class="span10">
+		<form class="box-rounded tool-form" action="/orgusers" method="post">
+			<div class="control-group options">
+				<div class="controls">
+					<label class="radio">
+						<input type="radio" name="f" id="fhtml" value="html" checked="checked"/>
+						Display Users on a Web Page
+					</label>
+					<label class="radio">
+						<input type="radio" name="f" id="fcsv" value="csv"/>
+						Download Users as a CSV File
+					</label>
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<button type="submit" class="btn">Get Organization Users</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="row-fluid">
+	<div class="span10 box-rounded desc">
+		<div>
+			<button id="info" class="btn btn-link">Tool Info <i class="icon-chevron-right"></i></button>
+		</div>
+
+		<div id="desc" class="hide">
+			<p>
+				This tool will display / download information on all users in your organization.
+			</p> 
+			<p>
+				You need to be an organization admin to perform this operation. 
+				Otherwise no users will be returned.
+			</p>
+		</div>
+
+	</div>
+</div>
+{{end}}
+
+{{define "moreJS"}}
+<script type="text/javascript">
+require([], function() {
+	var $info = $("#info"),
+		$desc = $("#desc"),
+		toggleToolInfo = function() {
+			$desc.toggleClass('hide');
+		};
+
+	$info.bind('click', toggleToolInfo);
+
+	$("#folderUrl").focus();
+});
+</script>
+{{end}}

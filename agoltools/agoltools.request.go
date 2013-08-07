@@ -6,6 +6,7 @@ import (
 	"appengine/urlfetch"
 	"encoding/json"
 	"html/template"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -22,6 +23,12 @@ type Request struct {
 
 var timeoutDuration = time.Second * 60
 
+var templateFuncs = template.FuncMap{
+	"safe": func(s string) template.HTML {
+		return template.HTML(s)
+	},
+}
+
 func (r *Request) RenderUsingBaseTemplate(templateFilePaths ...string) (err error) {
 	templates := []string{baseTemplate, headerTemplate}
 	templates = append(templates, templateFilePaths...)
@@ -29,9 +36,18 @@ func (r *Request) RenderUsingBaseTemplate(templateFilePaths ...string) (err erro
 }
 
 func (r *Request) RenderTemplates(templates ...string) (err error) {
-	t, err := template.ParseFiles(templates...)
-	if err != nil {
-		return err
+	t := template.New("").Funcs(templateFuncs)
+	// reading files instead of calling ParseFiles directly because
+	// I haven't been able to get Funcs to work when using ParseFiles so far
+	for _, tmpl := range templates {
+		b, err := ioutil.ReadFile(tmpl)
+		if err != nil {
+			return err
+		}
+		t, err = t.Parse(string(b))
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := t.Execute(r.W, r); err != nil {

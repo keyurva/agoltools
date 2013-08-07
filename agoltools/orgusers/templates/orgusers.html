@@ -1,0 +1,131 @@
+{{define "moreStyles"}}
+
+{{"<!--[if !IE]><!-->" | safe}} 
+<link href="/css/table-responsive.css" rel="stylesheet">
+<style>
+@media(max-width: 767px)  {
+	td:nth-of-type(1):before { content: "Username"; }
+	td:nth-of-type(2):before { content: "Full Name"; }
+	td:nth-of-type(3):before { content: "Email"; }
+	td:nth-of-type(4):before { content: "Role"; }
+}
+</style>
+{{"<!--<![endif]-->" | safe}}
+
+<style>
+.num-users {
+	min-height: 0!important;
+	margin-bottom: 1rem;
+}
+
+.no-users {
+	padding: 1rem;
+}
+
+.search input {
+	margin-bottom: 0;
+}
+
+table {
+	font-size: 1rem;
+}
+
+th.header { 
+    background-image: url(/img/bg.gif);     
+    cursor: pointer; 
+    background-repeat: no-repeat; 
+    background-position: center left;
+    padding-left: 1.5rem; 
+}
+
+th.headerSortDown { 
+    background-image: url(/img/desc.gif);
+}
+
+th.headerSortUp { 
+    background-image: url(/img/asc.gif); 
+}
+</style>
+
+{{end}}
+
+{{define "content"}}
+	{{with .Data.Users}}
+		<div class="row-fluid">
+			<div class="span12 text-center focus num-users">
+				Total Users ({{. | len}})
+			</div>
+		</div>
+
+		<div class="row-fluid visible-desktop visible-tablet">
+			<div class="span12 text-right search">
+				<input type="text" id="search" name="search" class="input-xlarge" placeholder="Search Users..." />
+			</div>
+		</div>
+
+		<div class="row-fluid">
+			<div class="span12">
+				<table id="usersTable" class="table table-striped tablesorter">
+					<thead>
+						<tr>
+							<th>Username</th>
+							<th>Full Name</th>
+							<th>Email</th>
+							<th>Role</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{range .}}
+							<tr>
+								<td>{{or .Username "N/A"}}</td>
+								<td>{{or .FullName "N/A"}}</td>
+								<td>{{or .Email "N/A"}}</td>
+								<td>{{or .Role "N/A"}}</td>
+							</tr>
+						{{end}}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	{{else}}
+		<div class="row-fluid">
+			<div class="span12 focus no-users">
+				Sorry no users were returned. 
+				You must be an organization admin to perform this operation.
+			</div>
+		</div>
+	{{end}}
+{{end}}
+
+{{define "moreJS"}}
+<script type="text/javascript">
+require(['jquery.tablesorter'], function() {
+	var $usersTable = $("#usersTable"),
+	$usersTableBody = $usersTable.find("tbody"),
+	$searchInput = $("#search"),
+	searchTable = function() {
+		var regExp = new RegExp($searchInput.val(), 'i');
+		$usersTableBody.find('tr').each(function(index, row) {
+			var allCells = $(row).find('td');
+			if(allCells.length > 0) {
+				var found = false;
+				allCells.each(function(index, td) {
+					if(regExp.test($(td).text())) {
+						found = true;
+						return false;
+					}
+				});
+				if(found) {
+					$(row).show();
+				} else {
+					$(row).hide();
+				}
+			}
+		});
+	};
+
+	$usersTable.tablesorter({sortList: [[0,0]]});
+	$searchInput.keyup(searchTable);
+});
+</script>
+{{end}}

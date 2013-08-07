@@ -4,8 +4,59 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
+
+func GetAllOrgUsers(rt http.RoundTripper, auth *Auth) (users []User, err error) {
+	users = []User{}
+	// get first batch
+	start := 1
+	num := 100
+	ur, err := GetOrgUsers(rt, start, num, auth)
+	if err != nil {
+		return nil, DisplayError("Unable to get organization users", err)
+	}
+	users = append(users, ur.Users...)
+
+	// concurrently fetch other batches based on total
+	total := ur.Total
+	start += num
+	batches := make(chan []User)
+	numBatches := 0
+	for start <= total {
+		go func(start int) {
+			ur, _ := GetOrgUsers(rt, start, num, auth)
+			if ur != nil {
+				batches <- ur.Users
+			} else {
+				batches <- nil
+			}
+		}(start)
+		numBatches++
+		start += num
+	}
+
+	for i := 0; i < numBatches; i++ {
+		us := <-batches
+		if us != nil {
+			users = append(users, us...)
+		}
+	}
+
+	return users, nil
+}
+
+func GetOrgUsers(rt http.RoundTripper, start int, num int, auth *Auth) (ur *UsersResponse, err error) {
+	params := url.Values{"f": {"json"}, "token": {auth.AccessToken}, "start": {strconv.Itoa(start)}, "num": {strconv.Itoa(num)}}
+	url := fmt.Sprintf("%s/portals/self/users", config.PortalAPIBaseUrl)
+
+	if err = getAndUnmarshalJson(rt, url, params, &ur); err != nil {
+		return nil, err
+	}
+
+	return ur, nil
+}
 
 func AddFolderServices(rt http.RoundTripper, folderUrl string, auth *Auth) (folder *Folder, catalog *ServiceCatalog, status map[string]bool, err error) {
 	// get catalog

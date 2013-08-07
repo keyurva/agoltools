@@ -1,13 +1,18 @@
 ArcGIS Online Tools
 =========
 
-ArcGIS Online is a collection of tools (well, at this time only one :) for your ArcGIS Online account. 
+ArcGIS Online is a collection of tools for your ArcGIS Online account. 
 
 The application is hosted on [appengine][appengine] and is available at:
 
 [https://agoltools.appspot.com/](https://agoltools.appspot.com/)
 
 If you'd like to see a particular tool implemented you can describe and add it [here][issues]. 
+
+The following tools are supported:
+
+* Adds all services from an ArcGIS Server folder into your ArcGIS Online account
+* Display or download (CSV) your organization's users
 
 This application is built using [Go][go] and [Bootstrap][bootstrap]. 
 
