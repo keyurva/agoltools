@@ -1,7 +1,7 @@
 ArcGIS Online Tools
 =========
 
-ArcGIS Online is a collection of tools for your ArcGIS Online account. 
+ArcGIS Online Tools is a collection of tools for your ArcGIS Online account. 
 
 The application is hosted on [appengine][appengine] and is available at:
 
