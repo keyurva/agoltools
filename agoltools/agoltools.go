@@ -25,7 +25,7 @@ func HandleFunc(pattern string, handler HandlerFunc) {
 }
 
 func handleError(r *Request, err error) {
-	r.LogInfof("%s", err)
+	r.LogErrorf("%s\n", err)
 
 	r.AddData(map[string]interface{}{
 		"PageTitle":   "Something went wrong",

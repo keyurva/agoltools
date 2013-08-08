@@ -2,13 +2,16 @@ package agoltools
 
 import (
 	"agolclient"
+	"agoltools/config"
 	"appengine"
 	"appengine/urlfetch"
 	"encoding/json"
+	"fmt"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path/filepath"
+	"reflect"
 	"time"
 )
 
@@ -27,6 +30,33 @@ var templateFuncs = template.FuncMap{
 	"safe": func(s string) template.HTML {
 		return template.HTML(s)
 	},
+	"gt": func(first, second interface{}) bool {
+		switch first.(type) {
+		case int, int8, int16, int32, int64:
+			switch second.(type) {
+			case int, int8, int16, int32, int64:
+				return reflect.ValueOf(first).Int() > reflect.ValueOf(second).Int()
+			}
+		}
+		return false
+	},
+	"eq": func(first, second interface{}) bool {
+		switch first.(type) {
+		case int, int8, int16, int32, int64:
+			switch second.(type) {
+			case int, int8, int16, int32, int64:
+				return reflect.ValueOf(first).Int() == reflect.ValueOf(second).Int()
+			}
+		}
+		return false
+	},
+	"portalUrl": func(relativeUrl string, auth *agolclient.Auth) string {
+		portalUrl := fmt.Sprintf("%s%s", config.Config.PortalAPIBaseUrl, relativeUrl)
+		if auth != nil {
+			portalUrl = fmt.Sprintf("%s?token=%s", portalUrl, auth.AccessToken)
+		}
+		return portalUrl
+	},
 }
 
 func (r *Request) RenderUsingBaseTemplate(templateFilePaths ...string) (err error) {
@@ -36,21 +66,13 @@ func (r *Request) RenderUsingBaseTemplate(templateFilePaths ...string) (err erro
 }
 
 func (r *Request) RenderTemplates(templates ...string) (err error) {
-	t := template.New("").Funcs(templateFuncs)
-	// reading files instead of calling ParseFiles directly because
-	// I haven't been able to get Funcs to work when using ParseFiles so far
-	for _, tmpl := range templates {
-		b, err := ioutil.ReadFile(tmpl)
-		if err != nil {
-			return err
-		}
-		t, err = t.Parse(string(b))
-		if err != nil {
-			return err
-		}
+	tname := filepath.Base(templates[0])
+	t, err := template.New(tname).Funcs(templateFuncs).ParseFiles(templates...)
+	if err != nil {
+		return err
 	}
 
-	if err := t.Execute(r.W, r); err != nil {
+	if err := t.ExecuteTemplate(r.W, tname, r); err != nil {
 		return err
 	}
 
@@ -66,6 +88,10 @@ func (r *Request) Context() appengine.Context {
 
 func (r *Request) LogInfof(format string, args ...interface{}) {
 	r.Context().Infof(format, args...)
+}
+
+func (r *Request) LogErrorf(format string, args ...interface{}) {
+	r.Context().Errorf(format, args...)
 }
 
 func (r *Request) Transport() *urlfetch.Transport {

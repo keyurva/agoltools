@@ -5,14 +5,26 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"runtime"
 	"strings"
 	"time"
 )
 
 var r = rand.New(rand.NewSource(time.Now().Unix()))
+
+func LogError(err error, logStack bool) {
+	log.Printf("ERROR: %s\n", err)
+	if logStack {
+		buf := make([]byte, 1<<16)
+		n := runtime.Stack(buf, false)
+		s := string(buf[:n])
+		log.Printf("STACK: %s\n", s)
+	}
+}
 
 func randString(n int) string {
 	chars := []rune("abcdefghijklmnopqrstuvwxyz0123456789")

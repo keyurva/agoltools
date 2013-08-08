@@ -13,9 +13,6 @@
 	line-height: 1.5rem;
 	padding: 0.5rem;
 }
-.hide {
-	display: none;
-}
 #info {
 	padding-left: 0;
 	text-decoration: none;
@@ -46,7 +43,7 @@
 <div class="row-fluid">
 	<div class="span10 box-rounded desc">
 		<div>
-			<button id="info" class="btn btn-link">Tool Info <i class="icon-chevron-right"></i></button>
+			<button id="info" agoltools-toggle="desc" class="btn btn-link">Tool Info <i class="icon-chevron-right"></i></button>
 		</div>
 
 		<div id="desc" class="hide">
@@ -72,14 +69,8 @@
 
 {{define "moreJS"}}
 <script type="text/javascript">
-require([], function() {
-	var $info = $("#info"),
-		$desc = $("#desc"),
-		toggleToolInfo = function() {
-			$desc.toggleClass('hide');
-		};
-
-	$info.bind('click', toggleToolInfo);
+require(['agoltools'], function(agoltools) {
+	agoltools.toggler();
 
 	$("#folderUrl").focus();
 });

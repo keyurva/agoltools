@@ -1,0 +1,234 @@
+{{define "moreStyles"}}
+
+<style>
+.no-info {
+	padding: 1rem;
+}
+.info {
+	font-size: 1rem;
+	margin-bottom: 1rem;
+}
+.meta {
+	color: #999;
+}
+.toggler button {
+	padding-left: 0;
+	text-decoration: none!important;
+	padding-bottom: 1rem;
+}
+.info-img {
+	margin-left: 0.5rem;
+	margin-bottom: 0.5rem;
+	max-width: 90%;
+}
+.title-row {
+	font-weight: bold;
+}
+.extra {
+	color: #999;
+	font-size: 0.8rem;
+	line-height: normal;
+}
+
+@media(max-width: 767px)  {
+	.group-row {
+		border-bottom: 1px solid #ccc;
+		margin-bottom: 0.5rem;
+	}
+
+	.group-row div[class^=span] {
+		padding-bottom: 0.25rem;
+	}
+}
+</style>
+
+{{end}}
+
+{{define "content"}}
+
+	{{$auth := .Auth}}
+	{{$portalHomeUrl := .Data.PortalHomeUrl}}
+
+	{{with .Data.MyAGOL}}
+
+		{{with .User}}
+			<div class="row-fluid info">
+				<div class="span12 focus">
+					<div class="toggler">
+						<button agoltools-toggle="user-info" class="btn btn-link">User Info <i class="icon-chevron-right"></i></button>
+					</div>
+					<div id="user-info" class="row-fluid">
+						{{with .RelativeThumbnailUrl}}
+							<div class="span3">
+								<img class="agoltools-img info-img" src="{{portalUrl . $auth}}"/>
+							</div>
+						{{end}}
+						<div class="span9">
+							<div class="row-fluid">
+								<div class="span3 meta">Username</div>
+								<div class="span9">{{.Username}}</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span3 meta">Full Name</div>
+								<div class="span9">{{.FullName}}</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span3 meta">Email</div>
+								<div class="span9">{{.Email}}</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span3 meta">Role</div>
+								<div class="span9">{{or .Role "N/A"}}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{{with .Groups}}
+				<div class="row-fluid info">
+					<div class="span12 focus">
+						<div class="toggler">
+							<button agoltools-toggle="groups" class="btn btn-link">My Groups ({{. | len}}) <i class="icon-chevron-right"></i></button>
+						</div>
+						<div id="groups" class="row-fluid hide">
+							<div class="span12">
+								<div class="row-fluid visible-desktop visible-tablet title-row">
+									<div class="span5">Title</div>
+									<div class="span3">Owner</div>
+									<div class="span2">Access</div>
+									<div class="span2">Membership</div>
+								</div>
+								{{range .}}
+									<div class="row-fluid group-row">
+										{{$groupUrl := printf "%s/group.html?owner=%s&title=%s" $portalHomeUrl .Owner .Title}}
+										<div class="span5">
+											<div class="visible-phone extra">Title</div>
+											<a href="{{$groupUrl}}">{{.Title}}</a>
+											{{with .UserMembership}}
+												{{$applications := .Applications}}
+												{{if gt $applications 0 }}
+													<p class="visible-desktop visible-tablet extra">
+														{{if eq $applications 1}}
+															1 pending application
+														{{else}}
+															{{$applications}} pending application
+														{{end}}
+													</p>
+												{{end}}										
+											{{end}}
+										</div>
+										<div class="span3">
+											<div class="visible-phone extra">Owner</div>
+											{{.Owner}}
+										</div>
+										<div class="span2">
+											<div class="visible-phone extra">Access</div>
+											{{.Access}}
+										</div>
+										<div class="span2">
+											<div class="visible-phone extra">Membership</div>
+											{{.UserMembership.MemberType}}
+										</div>
+									</div>
+								{{end}}
+							</div>
+						</div>
+					</div>
+				</div>
+			{{end}}
+		{{end}}
+
+		{{with .Org}}
+			<div class="row-fluid">
+				<div class="span12 focus info">
+					<div class="toggler">
+						<button agoltools-toggle="org-info" class="btn btn-link">Organization Info <i class="icon-chevron-right"></i></button>
+					</div>
+					<div id="org-info" class="row-fluid hide">
+						{{with .RelativeThumbnailUrl}}
+							<div class="span3">
+								<img class="agoltools-img info-img" src="{{portalUrl . $auth}}"/>
+							</div>
+						{{end}}
+						<div class="span9">
+							<div class="row-fluid">
+								<div class="span3 meta">Name</div>
+								<div class="span9">{{.Name}}</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span3 meta">URL Key</div>
+								<div class="span9">{{.UrlKey}}</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span3 meta">ID</div>
+								<div class="span9">{{.Id}}</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span3 meta">All SSL?</div>
+								<div class="span9">{{.AllSSL}}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		{{end}}
+
+		{{with .Subscription}}
+			<div class="row-fluid">
+				<div class="span12 focus info">
+					<div class="toggler">
+						<button agoltools-toggle="sub-info" class="btn btn-link">Subscription Info <i class="icon-chevron-right"></i></button>
+					</div>
+					<div id="sub-info" class="row-fluid hide">
+						<div class="span12">
+							<div class="row-fluid">
+								<div class="span3 meta">ID</div>
+								<div class="span9">{{.Id}}</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span3 meta">State</div>
+								<div class="span9">{{.State}}</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span3 meta">Available Credits</div>
+								<div class="span9">{{printf "%.2f" .AvailableCredits}}</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span3 meta">Max Users</div>
+								<div class="span9">{{.MaxUsers}}</div>
+							</div>
+							{{with .Expires}}
+								<div class="row-fluid">
+									<div class="span3 meta">Expires</div>
+									<div class="span9">{{.Format "Jan 1, 2006"}}</div>
+								</div>
+							{{end}}							
+							<div class="row-fluid">
+								<div class="span3 meta">Type</div>
+								<div class="span9">{{.Type}}</div>
+							</div>
+						</div>
+					</div>
+				</div>				
+			</div>
+		{{end}}
+
+	{{else}}
+		<div class="row-fluid">
+			<div class="span12 focus no-info">
+				Sorry no info was returned. 
+				Do you want to <a href="/auth/signout">sign out</a>, sign in and try again?
+			</div>
+		</div>
+	{{end}}
+
+{{end}}
+
+{{define "moreJS"}}
+<script type="text/javascript">
+require(['agoltools'], function(agoltools) {
+	agoltools.toggler();
+});
+</script>
+{{end}}

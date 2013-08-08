@@ -8,6 +8,73 @@ import (
 	"strings"
 )
 
+func GetMyAGOL(rt http.RoundTripper, auth *Auth) (ma *MyAGOL, err error) {
+	selfChan := make(chan *PortalSelf)
+	userChan := make(chan *User)
+
+	go func() {
+		s, err := GetPortalSelf(rt, auth)
+		if err != nil {
+			selfChan <- nil
+		} else {
+			selfChan <- s
+		}
+	}()
+
+	go func() {
+		u, err := GetUser(rt, auth)
+		if err != nil {
+			userChan <- nil
+		} else {
+			userChan <- u
+		}
+	}()
+
+	ma = &MyAGOL{}
+
+	s := <-selfChan
+	if s == nil {
+		return nil, DisplayError("Unable to get self response", nil)
+	}
+
+	if s.Id != "" {
+		ma.Org = s.Org
+		ma.Subscription = s.SubscriptionInfo
+	}
+
+	u := <-userChan
+	if s == nil {
+		return nil, DisplayError("Unable to get user", nil)
+	}
+
+	ma.User = u
+
+	return ma, nil
+}
+
+func GetUser(rt http.RoundTripper, auth *Auth) (u *User, err error) {
+	params := url.Values{"f": {"json"}, "token": {auth.AccessToken}}
+	url := fmt.Sprintf("%s/community/users/%s", config.PortalAPIBaseUrl, auth.Username)
+
+	if err = getAndUnmarshalJson(rt, url, params, &u); err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
+
+func GetPortalSelf(rt http.RoundTripper, auth *Auth) (self *PortalSelf, err error) {
+	params := url.Values{"f": {"json"}, "token": {auth.AccessToken}}
+	url := fmt.Sprintf("%s/portals/self", config.PortalAPIBaseUrl)
+
+	if err = getAndUnmarshalJson(rt, url, params, &self); err != nil {
+		LogError(err, true)
+		return nil, err
+	}
+
+	return self, nil
+}
+
 func GetAllOrgUsers(rt http.RoundTripper, auth *Auth) (users []User, err error) {
 	users = []User{}
 	// get first batch

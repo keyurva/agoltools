@@ -6,6 +6,9 @@
 .options {
 	padding-bottom: 1rem;
 }
+.option {
+	font-size: 0.8rem;
+}
 .desc {
 	font-size: 0.9rem;
 	line-height: 1.5rem;
@@ -21,22 +24,20 @@
 {{define "content"}}
 <div class="row-fluid">
 	<div class="span10">
-		<form class="box-rounded tool-form" action="/orgusers" method="post">
+		<form class="box-rounded tool-form" action="/myagol" method="post">
 			<div class="control-group options">
 				<div class="controls">
 					<label class="radio">
 						<input type="radio" name="f" id="fhtml" value="html" checked="checked"/>
-						Display Users on a Web Page
+						Display My ArcGIS Online Information on a Web Page
+						<p class="muted option">At this time this is the only option available</p>
 					</label>
-					<label class="radio">
-						<input type="radio" name="f" id="fcsv" value="csv"/>
-						Download Users as a CSV File
-					</label>
+					
 				</div>
 			</div>
 			<div class="control-group">
 				<div class="controls">
-					<button type="submit" class="btn">Get Organization Users</button>
+					<button type="submit" class="btn">Get My ArcGIS Online Information</button>
 				</div>
 			</div>
 		</form>
@@ -51,11 +52,10 @@
 
 		<div id="desc" class="hide">
 			<p>
-				This tool will display / download information on all users in your organization.
+				This tool displays your ArcGIS Online information on a single web page.
 			</p> 
 			<p>
-				You need to be an organization admin to perform this operation. 
-				Otherwise no users will be returned.
+				Information includes your profile, your organization and your groups.
 			</p>
 		</div>
 
