@@ -9,5 +9,17 @@ define(['jquery'], function($) {
 		});
 	};
 
+	agoltools.expandAll = function() {
+		$('[agoltools-toggle]').each(function() {
+			$("#" + $(this).attr('agoltools-toggle')).removeClass('hide');
+		});
+	};
+
+	agoltools.collapseAll = function() {
+		$('[agoltools-toggle]').each(function() {
+			$("#" + $(this).attr('agoltools-toggle')).addClass('hide');
+		});
+	};
+
 	return agoltools;
 });

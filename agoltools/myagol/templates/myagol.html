@@ -30,6 +30,14 @@
 	line-height: normal;
 }
 
+.expcol {
+	font-size: 0.8rem;
+}
+
+.expcol a {
+	padding: 0;
+}
+
 @media(max-width: 767px)  {
 	.group-row {
 		border-bottom: 1px solid #ccc;
@@ -50,6 +58,13 @@
 	{{$portalHomeUrl := .Data.PortalHomeUrl}}
 
 	{{with .Data.MyAGOL}}
+		<div class="row-fluid">
+			<div class="span12 expcol">
+				<a id="exp-all" class="btn btn-link" title="Expand All"><i class="icon-plus"></i></a>
+				&nbsp;
+				<a id="col-all" class="btn btn-link" title="Collapse All"><i class="icon-minus"></i></a>
+			</div>
+		</div>
 
 		{{with .User}}
 			<div class="row-fluid info">
@@ -91,7 +106,7 @@
 						<div class="toggler">
 							<button agoltools-toggle="groups" class="btn btn-link">My Groups ({{. | len}}) <i class="icon-chevron-right"></i></button>
 						</div>
-						<div id="groups" class="row-fluid hide">
+						<div id="groups" class="row-fluid">
 							<div class="span12">
 								<div class="row-fluid visible-desktop visible-tablet title-row">
 									<div class="span5">Title</div>
@@ -145,7 +160,7 @@
 					<div class="toggler">
 						<button agoltools-toggle="org-info" class="btn btn-link">Organization Info <i class="icon-chevron-right"></i></button>
 					</div>
-					<div id="org-info" class="row-fluid hide">
+					<div id="org-info" class="row-fluid">
 						{{with .RelativeThumbnailUrl}}
 							<div class="span3">
 								<img class="agoltools-img info-img" src="{{portalUrl . $auth}}"/>
@@ -180,7 +195,7 @@
 					<div class="toggler">
 						<button agoltools-toggle="sub-info" class="btn btn-link">Subscription Info <i class="icon-chevron-right"></i></button>
 					</div>
-					<div id="sub-info" class="row-fluid hide">
+					<div id="sub-info" class="row-fluid">
 						<div class="span12">
 							<div class="row-fluid">
 								<div class="span3 meta">ID</div>
@@ -228,6 +243,12 @@
 {{define "moreJS"}}
 <script type="text/javascript">
 require(['agoltools'], function(agoltools) {
+	var $expAll = $("#exp-all"),
+		$colAll = $("#col-all");
+
+	$expAll.bind('click', agoltools.expandAll);
+	$colAll.bind('click', agoltools.collapseAll);
+
 	agoltools.toggler();
 });
 </script>

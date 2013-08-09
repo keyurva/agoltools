@@ -11,7 +11,7 @@ If you'd like to see a particular tool implemented you can describe and add it [
 
 The following tools are supported:
 
-* Adds all services from an ArcGIS Server folder into your ArcGIS Online account
+* Add all services from an ArcGIS Server folder into your ArcGIS Online account
 * Display or download (CSV) your organization's users
 * Display your ArcGIS Online information (profile info, org and subscription info, groups, etc.) on a single page.
 
