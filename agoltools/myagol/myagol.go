@@ -40,5 +40,27 @@ func getMyAGOL(r *agoltools.Request) (err error) {
 	}
 	r.Data["PortalHomeUrl"] = config.PortalHomeUrl(orgUrlKey)
 
+	// panel dropdown and ids
+	pdropdown := []string{}
+	pids := map[string]string{} //[display name]id
+
+	addPanel := func(condition bool, name, id string) {
+		if condition {
+			pdropdown = append(pdropdown, name)
+			pids[name] = id
+		}
+	}
+
+	addPanel(myagol.User != nil, "User Info", "user-panel")
+	addPanel(myagol.Folders != nil, "My Content", "content-panel")
+	addPanel(myagol.User != nil && myagol.User.Groups != nil, "My Groups", "groups-panel")
+	addPanel(myagol.Org != nil, "Organization Info", "org-panel")
+	addPanel(myagol.Subscription != nil, "Subscription Info", "sub-panel")
+
+	if len(pdropdown) > 1 {
+		r.Data["PanelDropdown"] = pdropdown
+		r.Data["PanelIds"] = pids
+	}
+
 	return r.RenderUsingBaseTemplate(orgUsersTemplate)
 }

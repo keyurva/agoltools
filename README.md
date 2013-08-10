@@ -11,9 +11,9 @@ If you'd like to see a particular tool implemented you can describe and add it [
 
 The following tools are supported:
 
+* Display your ArcGIS Online information (profile info, content, groups, organization and subscription info) on a single page.
 * Add all services from an ArcGIS Server folder into your ArcGIS Online account
 * Display or download (CSV) your organization's users
-* Display your ArcGIS Online information (profile info, org and subscription info, groups, etc.) on a single page.
 
 This application is built using [Go][go] and [Bootstrap][bootstrap]. 
 

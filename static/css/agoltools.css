@@ -68,27 +68,34 @@ body {
 
 .agoltools-header-row [class^="span"] {
 	min-height: 0;
-}
-
-.agoltools-header {
 	font-weight: bold;
 	color: #aaa;
 }
 
-.agoltools-header img {
+.agoltools-header-row img {
 	height: 1rem;
 }
 
-.agoltools-header .dropdown i {
+.agoltools-header-row .dropdown i {
 	position:relative;
 	bottom:0.1rem;
 }
 
-.agoltools-header .dropdown ul {
+.agoltools-header-row .dropdown ul {
 	min-width:0;
 	letter-spacing:1px;
 }
 
-.agoltools-header .dropdown li a {
+.agoltools-header-row .dropdown li a {
 	font-weight: bold;
+}
+
+.agoltools-header-row .right-panel {
+	text-align: right;
+}
+
+@media(max-width: 767px) {
+	.agoltools-header-row .right-panel {
+		text-align: left;
+	}
 }

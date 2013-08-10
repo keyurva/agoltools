@@ -1,31 +1,32 @@
 {{define "header"}}
 <div class="row-fluid agoltools-header-row">
-  <div class="span12 agoltools-header">
+  <div class="span4 agoltools-header">
     <span><a href="/"><img src="/img/agoltools.png"/></a></span>
   	<a href="/">ArcGIS Online Tools</a>
-    
-    <span class="pull-right">
-    	{{if .Auth}}
-    		Logged in as: <span class="focus">{{.Auth.Username}}</span>
-    		|
-    		<a href="/auth/signout">Sign Out</a>
-		  {{else}}
-			 <a href="/auth/signin">Sign in to ArcGIS Online</a>
-    	{{end}}
-      |
-      <span class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" data-target="#" href="">
-          About
-          <i class="icon-chevron-down"></i>
-        </a>
-        <ul class="dropdown-menu pull-right">
-          <li><a href="/about">About</a></li>
-          <li><a href="https://github.com/keyurva/agoltools/issues">Issues</a></li>
-          <li><a href="https://github.com/keyurva/agoltools">Code</a></li>
-        </ul>
-      </span> 	
-    </span>
   </div>
+    
+  <div class="span8 right-panel">
+  	{{if .Auth}}
+  		Logged in as: <span class="focus">{{.Auth.Username}}</span>
+  		|
+  		<a href="/auth/signout">Sign Out</a>
+	  {{else}}
+		 <a href="/auth/signin">Sign in to ArcGIS Online</a>
+  	{{end}}
+    |
+    <span class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" data-target="#" href="">
+        About
+        <i class="icon-chevron-down"></i>
+      </a>
+      <ul class="dropdown-menu pull-right">
+        <li><a href="/about">About</a></li>
+        <li><a href="https://github.com/keyurva/agoltools/issues">Issues</a></li>
+        <li><a href="https://github.com/keyurva/agoltools">Code</a></li>
+      </ul>
+    </span> 	
+  </div>
+
 </div>
 
 <div class="row-fluid">

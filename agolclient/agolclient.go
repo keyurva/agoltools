@@ -11,6 +11,7 @@ import (
 func GetMyAGOL(rt http.RoundTripper, auth *Auth) (ma *MyAGOL, err error) {
 	selfChan := make(chan *PortalSelf)
 	userChan := make(chan *User)
+	contentChan := make(chan []*FolderContent)
 
 	go func() {
 		s, err := GetPortalSelf(rt, auth)
@@ -27,6 +28,15 @@ func GetMyAGOL(rt http.RoundTripper, auth *Auth) (ma *MyAGOL, err error) {
 			userChan <- nil
 		} else {
 			userChan <- u
+		}
+	}()
+
+	go func() {
+		fs, err := GetUserContent(rt, auth)
+		if err != nil {
+			contentChan <- nil
+		} else {
+			contentChan <- fs
 		}
 	}()
 
@@ -49,7 +59,76 @@ func GetMyAGOL(rt http.RoundTripper, auth *Auth) (ma *MyAGOL, err error) {
 
 	ma.User = u
 
+	fs := <-contentChan
+	if fs == nil {
+		return nil, DisplayError("Unable to get user content", nil)
+	}
+
+	ma.Folders = fs
+
+	numItems := 0
+	for _, f := range fs {
+		if f.Items != nil {
+			numItems += len(f.Items)
+		}
+	}
+	ma.NumItems = numItems
+
 	return ma, nil
+}
+
+func GetUserContent(rt http.RoundTripper, auth *Auth) (fs []*FolderContent, err error) {
+	fs = []*FolderContent{}
+	// get root folder
+	root, err := GetFolderContent(rt, "", auth)
+	if err != nil {
+		return nil, err
+	}
+
+	fs = append(fs, root)
+
+	// get all subfolders concurrently
+	if root.Folders != nil {
+		fchan := make(chan *FolderContent)
+		for _, f := range root.Folders {
+			go func(f *Folder) {
+				fc, err := GetFolderContent(rt, f.Id, auth)
+				if err != nil {
+					LogError(err, true)
+					fchan <- nil
+				} else {
+					fc.Folder = *f
+					fchan <- fc
+				}
+			}(f)
+		}
+
+		for _, _ = range root.Folders {
+			fc := <-fchan
+			if fc != nil {
+				fs = append(fs, fc)
+			}
+		}
+	}
+
+	return fs, nil
+}
+
+func GetFolderContent(rt http.RoundTripper, folderId string, auth *Auth) (f *FolderContent, err error) {
+	folderUri := folderId
+	if folderUri != "" {
+		folderUri = "/" + folderUri
+	}
+	params := url.Values{"f": {"json"}, "token": {auth.AccessToken}}
+	url := fmt.Sprintf("%s/content/users/%s%s", config.PortalAPIBaseUrl, auth.Username, folderUri)
+
+	if err = getAndUnmarshalJson(rt, url, params, &f); err != nil {
+		return nil, err
+	}
+
+	f.Id = folderId
+
+	return f, nil
 }
 
 func GetUser(rt http.RoundTripper, auth *Auth) (u *User, err error) {
@@ -209,10 +288,32 @@ func GetServiceCatalog(rt http.RoundTripper, folderUrl string) (catalog *Service
 	return catalog, nil
 }
 
+func GenerateToken(rt http.RoundTripper, username string, password string) (auth *Auth, err error) {
+	params := url.Values{"f": {"json"}, "username": {username}, "password": {password}, "client": {"requestip"}, "expiration": {"20160"}}
+	url := fmt.Sprintf("%s/generateToken", config.PortalAPIBaseUrl)
+
+	type Response struct{ Token string }
+
+	var res Response
+
+	if err = postAndUnmarshalJson(rt, url, params, &res); err != nil {
+		return nil, err
+	}
+
+	return &Auth{Username: username, AccessToken: res.Token}, nil
+
+}
+
 func SetConfig(cfg *Config) {
 	config = cfg
 }
 
-var config = &Config{
-	PortalAPIBaseUrl: "https://devext.arcgis.com/sharing/rest",
-}
+var (
+	DevExtConfig = &Config{
+		PortalAPIBaseUrl: "https://devext.arcgis.com/sharing/rest",
+	}
+	ProdConfig = &Config{
+		PortalAPIBaseUrl: "https://www.arcgis.com/sharing/rest",
+	}
+	config = DevExtConfig
+)

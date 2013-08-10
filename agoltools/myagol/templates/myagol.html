@@ -38,6 +38,32 @@
 	padding: 0;
 }
 
+.items > .row-fluid {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+
+.items > div[class=row-fluid]:nth-child(odd) {
+	background-color: #fff;
+}
+
+.item-details p {
+	line-height: normal;
+}
+
+.item-tags > a {
+	padding-top: 0;
+	padding-left: 0;
+}
+
+.groups > div[class=row-fluid]:nth-child(even) {
+	background-color: #fff;
+}
+
+.actions {
+	margin-bottom: 0.5rem;
+}
+
 @media(max-width: 767px)  {
 	.group-row {
 		border-bottom: 1px solid #ccc;
@@ -56,18 +82,39 @@
 
 	{{$auth := .Auth}}
 	{{$portalHomeUrl := .Data.PortalHomeUrl}}
+	{{$pdropdown := .Data.PanelDropdown}}
+	{{$pids := .Data.PanelIds}}
 
 	{{with .Data.MyAGOL}}
-		<div class="row-fluid">
-			<div class="span12 expcol">
+		<div class="row-fluid actions">
+			<div class="span1 expcol">
 				<a id="exp-all" class="btn btn-link" title="Expand All"><i class="icon-plus"></i></a>
 				&nbsp;
 				<a id="col-all" class="btn btn-link" title="Collapse All"><i class="icon-minus"></i></a>
 			</div>
+
+			{{with $pdropdown}}				
+				<div class="span11">
+					<div class="btn-group">
+						<a class="btn dropdown-toggle" data-toggle="dropdown" data-target="#" href="">
+							Jump To
+							<i class="icon-chevron-down"></i>
+						</a>
+						<ul class="dropdown-menu">
+							{{range .}}
+								<li>
+									<a href="#{{index $pids .}}">{{.}}</a>
+								</li>
+							{{end}}
+						</ul>
+				    </div>
+				</div>
+			{{end}}
+
 		</div>
 
 		{{with .User}}
-			<div class="row-fluid info">
+			<div id="user-panel" class="row-fluid info">
 				<div class="span12 focus">
 					<div class="toggler">
 						<button agoltools-toggle="user-info" class="btn btn-link">User Info <i class="icon-chevron-right"></i></button>
@@ -99,15 +146,94 @@
 					</div>
 				</div>
 			</div>
+		{{end}}
 
+		{{$numItems := .NumItems}}
+
+		{{with .Folders}}
+			<div id="content-panel" class="row-fluid info">
+				<div class="span12 focus">
+					<div class="toggler">
+						<button agoltools-toggle="content" class="btn btn-link">My Content ({{$numItems}}) <i class="icon-chevron-right"></i></button>
+					</div>
+					<div id="content" class="row-fluid">
+						<div class="span12">
+							{{range .}}
+								{{$folderItems := .Items | len}}						
+								<div class="row-fluid">
+									<div class="span12">
+										<div class="toggler">
+											<button agoltools-toggle="items-{{.Id}}" class="btn btn-link">
+												<span class="meta">Folder: </span>
+												{{if .Title}}
+													{{.Title}}
+												{{else}}
+													ROOT
+												{{end}}
+												({{$folderItems}}) 
+												<i class="icon-chevron-right"></i>
+											</button>
+										</div>
+										<div id="items-{{.Id}}" class="row-fluid {{if eq $folderItems 0}}hide{{end}}">
+											<div class="span12 items">
+												{{with .Items}}
+													{{range .}}
+														{{$itemUrl := printf "%s/item.html?id=%s" $portalHomeUrl .Id}}
+														<div class="row-fluid">
+															
+															<div class="span3">
+																{{with .RelativeThumbnailUrl}}
+																	<img class="agoltools-img info-img" src="{{portalUrl . $auth}}"/>
+																{{else}}
+																	<img class="agoltools-img info-img" data-src="holder.js/200x133/text:No Image available"/>
+																{{end}}
+															</div>
+															
+															<div class="span9 item-details">
+																<div>
+																	<a href="{{$itemUrl}}">{{.Title}}</a> 
+																	({{.Type}})
+																</div>
+																<div>{{.Snippet}}</div>
+																{{with .Tags}}
+																	<div class="row-fluid">
+																		<div class="span1 meta">Tags:</div>
+																		<div class="span11 item-tags">
+																			{{range .}}
+																				{{$tagUrl := printf "%s/search.html?t=content&q=tags:%s" $portalHomeUrl .}}
+																				<a class="btn btn-link" href="{{$tagUrl}}">{{.}}</a>
+																			{{end}}
+																		</div>
+																	</div>																	
+																{{end}}
+																{{with .ModifiedTime}}
+																	<div class="meta">Last Modified: {{.Format "Jan 1, 2006"}}</div>
+																{{end}}
+															</div>
+														</div>
+													{{end}}
+												{{end}}
+											</div>
+										</div>
+									</div>
+								</div>
+							{{end}}
+						</div>
+					</div>
+				</div>
+			</div>
+		{{end}}
+
+
+		{{with .User}}
 			{{with .Groups}}
-				<div class="row-fluid info">
+				<div id="groups-panel" class="row-fluid info">
 					<div class="span12 focus">
 						<div class="toggler">
 							<button agoltools-toggle="groups" class="btn btn-link">My Groups ({{. | len}}) <i class="icon-chevron-right"></i></button>
 						</div>
 						<div id="groups" class="row-fluid">
-							<div class="span12">
+							<div class="span12 groups">
 								<div class="row-fluid visible-desktop visible-tablet title-row">
 									<div class="span5">Title</div>
 									<div class="span3">Owner</div>
@@ -115,7 +241,7 @@
 									<div class="span2">Membership</div>
 								</div>
 								{{range .}}
-									<div class="row-fluid group-row">
+									<div class="row-fluid">
 										{{$groupUrl := printf "%s/group.html?owner=%s&title=%s" $portalHomeUrl .Owner .Title}}
 										<div class="span5">
 											<div class="visible-phone extra">Title</div>
@@ -155,7 +281,7 @@
 		{{end}}
 
 		{{with .Org}}
-			<div class="row-fluid">
+			<div id="org-panel" class="row-fluid">
 				<div class="span12 focus info">
 					<div class="toggler">
 						<button agoltools-toggle="org-info" class="btn btn-link">Organization Info <i class="icon-chevron-right"></i></button>
@@ -183,6 +309,17 @@
 								<div class="span3 meta">All SSL?</div>
 								<div class="span9">{{.AllSSL}}</div>
 							</div>
+							{{with .FeaturedGroups}}
+								<div class="row-fluid">
+									<div class="span3 meta">Featured Groups</div>
+									<div class="span9">
+										{{range .}}
+											{{$groupUrl := printf "%s/group.html?owner=%s&title=%s" $portalHomeUrl .Owner .Title}}
+											<p><a href="{{$groupUrl}}">{{.Title}}</a></p>
+										{{end}}
+									</div>
+								</div>
+							{{end}}
 						</div>
 					</div>
 				</div>
@@ -190,7 +327,7 @@
 		{{end}}
 
 		{{with .Subscription}}
-			<div class="row-fluid">
+			<div id="sub-panel" class="row-fluid">
 				<div class="span12 focus info">
 					<div class="toggler">
 						<button agoltools-toggle="sub-info" class="btn btn-link">Subscription Info <i class="icon-chevron-right"></i></button>

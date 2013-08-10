@@ -23,11 +23,13 @@ type MyAGOL struct {
 	User         *User
 	Org          *Org
 	Subscription *Subscription
+	Folders      []*FolderContent
+	NumItems     int
 }
 
 type User struct {
 	Username, FullName, Email, Role, Thumbnail string
-	Groups                                     []Group
+	Groups                                     []*Group
 }
 
 func (u *User) RelativeThumbnailUrl() string {
@@ -68,6 +70,7 @@ func (s *Subscription) Expires() *time.Time {
 type Org struct {
 	Id, Name, UrlKey, Thumbnail string
 	AllSSL                      bool
+	FeaturedGroups              []*Group
 }
 
 func (org *Org) RelativeThumbnailUrl() string {
@@ -81,7 +84,6 @@ type PortalSelf struct {
 	*Org
 	SubscriptionInfo *Subscription
 	User             *User
-	FeaturedGroups   []Group
 }
 
 type UsersResponse struct {

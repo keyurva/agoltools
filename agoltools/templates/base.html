@@ -20,14 +20,15 @@
 
   <body>
 
-     <div class="container-fluid">
+    <div class="container-fluid">
 	    {{template "header" .}}
 	    {{template "content" .}}
 	    {{template "footer" .}}
-	</div>
+    </div>
 
     <script src="/js/require-jquery.js"></script>
     <script src="/js/bootstrap.js"></script>
+    <script src="/js/holder.js"></script>
     <script type="text/javascript">
     	require.config({
     		baseUrl: "/js"
