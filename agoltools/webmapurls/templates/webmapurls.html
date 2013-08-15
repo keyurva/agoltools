@@ -1,0 +1,123 @@
+{{define "moreStyles"}}
+
+<style>
+.no-info {
+	padding: 1rem;
+}
+.info {
+	font-size: 1rem;
+	margin-bottom: 1rem;
+}
+.meta {
+	color: #999;
+}
+.info-img {
+	margin-left: 0.5rem;
+	margin-bottom: 0.5rem;
+	max-width: 90%;
+}
+
+.items > .row-fluid {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+
+.items > div[class=row-fluid]:nth-child(odd) {
+	background-color: #fff;
+}
+
+.item-details p {
+	line-height: normal;
+}
+
+.item-tags > a {
+	padding-top: 0;
+	padding-left: 0;
+}
+
+.url-desc {
+	padding-bottom: 0.5rem;
+}
+
+.url-desc > p {
+	line-height: normal;
+}
+</style>
+
+{{end}}
+
+{{define "content"}}
+
+	{{$auth := .Auth}}
+	{{$portalHomeUrl := "https://www.arcgis.com/home"}}
+	{{$url := .Data.URL}}
+
+	{{with .Data.WebMapItems}}
+
+		<div id="content-panel" class="row-fluid info">
+			<div class="span12 focus">		
+				<div class="row-fluid">
+					<p>Web Maps ({{. | len}})</p>
+					<div class="url-desc">
+						<p>The Web Maps below reference the service URL </p>
+						<p class="meta">{{$url}}</p>
+					</div>
+				</div>	
+				<div class="row-fluid">
+					<div class="span12 items">
+						{{range .}}
+							{{$itemUrl := printf "%s/item.html?id=%s" $portalHomeUrl .Id}}
+							<div class="row-fluid">
+								
+								<div class="span3">
+									{{with .RelativeThumbnailUrl}}
+										<img class="agoltools-img info-img" src="{{portalUrl . $auth}}"/>
+									{{else}}
+										<img class="agoltools-img info-img" data-src="holder.js/200x133/text:No Image available"/>
+									{{end}}
+								</div>
+								
+								<div class="span9 item-details">
+									<div>
+										<a href="{{$itemUrl}}">{{.Title}}</a> 
+										({{.Type}})
+									</div>
+									<div>{{.Snippet}}</div>
+									{{with .Tags}}
+										<div class="row-fluid">
+											<div class="span1 meta">Tags:</div>
+											<div class="span11 item-tags">
+												{{range .}}
+													{{$tagUrl := printf "%s/search.html?t=content&q=tags:%s" $portalHomeUrl .}}
+													<a class="btn btn-link" href="{{$tagUrl}}">{{.}}</a>
+												{{end}}
+											</div>
+										</div>																	
+									{{end}}
+									{{with .ModifiedTime}}
+										<div class="meta">Last Modified: {{.Format "Jan 1, 2006"}}</div>
+									{{end}}
+								</div>
+							</div>
+						{{end}}
+					</div>
+				</div>
+			</div>
+		</div>
+
+	{{else}}
+		<div class="row-fluid">
+			<div class="span12 focus no-info">
+				No Web Maps referencing the URL you provided were found.
+			</div>
+		</div>
+	{{end}}
+
+{{end}}
+
+{{define "moreJS"}}
+<script type="text/javascript">
+require(['agoltools'], function(agoltools) {
+});
+</script>
+{{end}}

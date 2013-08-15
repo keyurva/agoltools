@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func UsersCsv(w io.Writer, users []User) {
+func UsersCsv(w io.Writer, users []*User) {
 	cw := csv.NewWriter(w)
 
 	cw.Write([]string{"Username", "Full Name", "Email", "Role"})
@@ -91,7 +91,7 @@ type UsersResponse struct {
 	Start     int
 	Num       int
 	NextStart int
-	Users     []User
+	Users     []*User
 }
 
 func (ur *UsersResponse) String() string {

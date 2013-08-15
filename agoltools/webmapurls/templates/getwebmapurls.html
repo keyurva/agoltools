@@ -1,0 +1,92 @@
+{{define "moreStyles"}}
+<style>
+.tool-form {
+	padding: 1rem;
+}
+.example {
+	font-size: 0.8rem;
+	padding: 0;
+	margin: 0;
+}
+.options {
+	padding-bottom: 1rem;
+}
+.desc {
+	font-size: 0.9rem;
+	line-height: 1.5rem;
+	padding: 0.5rem;
+}
+#info {
+	padding-left: 0;
+	text-decoration: none;
+}
+</style>
+{{end}}
+
+{{define "content"}}
+<div class="row-fluid">
+	<div class="span10">
+		<form class="box-rounded tool-form" action="/webmapurls" method="post">
+			<div class="control-group">
+				<label class="control-label" for="url">Service URL:</label>
+				<div class="controls">
+					<input type="text" id="url" name="url" class="span12" placeholder="Enter Service URL">
+					<p class="visible-desktop visible-tablet muted example">For example, <span class="focus">http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer</span></p>
+				</div>
+			</div>
+			<div class="control-group options">
+				<div class="controls">
+					<label class="radio">
+						<input type="radio" name="for" id="fuser" value="user" checked="checked"/>
+						Search for Web Maps in My Content
+					</label>
+					<label class="radio muted">
+						<input type="radio" name="for" id="fuser" value="org" disabled="true"/>
+						Search for Web Maps in My Organization's Content (TODO)
+						<p class="visible-desktop visible-tablet muted">
+							Note that only content you have access to will be searched
+						</p>
+					</label>					
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<button type="submit" class="btn">Get Web Maps</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="row-fluid">
+	<div class="span10 box-rounded desc">
+		<div>
+			<button id="info" agoltools-toggle="desc" class="btn btn-link">Tool Info <i class="icon-chevron-right"></i></button>
+		</div>
+
+		<div id="desc" class="hide">
+			<p>
+				This tool searches Web Maps that reference the specified service URL.
+			</p> 
+			<p>
+				You can either search for web maps within your own content or within your organization's content. 
+				In the latter case, only content that you have access to will be searched.
+			</p>
+			<p>
+				Note that depending on the number of web maps found it may take a few seconds to execute.
+			</p>
+		</div>
+
+	</div>
+</div>
+{{end}}
+
+{{define "moreJS"}}
+<script type="text/javascript">
+require(['agoltools'], function(agoltools) {
+	agoltools.toggler();
+
+	$("#url").focus();
+});
+</script>
+{{end}}

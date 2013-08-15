@@ -8,6 +8,128 @@ import (
 	"strings"
 )
 
+const (
+	// arbitrary limit on max search items returned
+	MaxSearchItems = 10000
+)
+
+func GetOrgWebMapsWithUrl(rt http.RoundTripper, accountId string, url string, auth *Auth) (wis []*WebMapItem, err error) {
+	items, err := GetAllSearchItems(rt, fmt.Sprintf(`accountid:%s type:"%s" -type:"%s"`, accountId, TypeWebMap, TypeWebMappingApplication), auth)
+	if err != nil {
+		return nil, DisplayError("Unable to get organization webmaps", err)
+	}
+	return GetWebMapsWithUrl(rt, items, url, auth)
+}
+
+func GetUserWebMapsWithUrl(rt http.RoundTripper, url string, auth *Auth) (wis []*WebMapItem, err error) {
+	items, err := GetAllSearchItems(rt, fmt.Sprintf(`owner:%s type:"%s" -type:"%s"`, auth.Username, TypeWebMap, TypeWebMappingApplication), auth)
+	if err != nil {
+		return nil, DisplayError("Unable to get user webmaps", err)
+	}
+	return GetWebMapsWithUrl(rt, items, url, auth)
+}
+
+func GetWebMapsWithUrl(rt http.RoundTripper, items []*Item, url string, auth *Auth) (wis []*WebMapItem, err error) {
+	wiChan := make(chan *WebMapItem)
+	num := 0
+
+	for _, i := range items {
+		if i.Type == TypeWebMap {
+			wi := &WebMapItem{}
+			wi.Item = i
+			num++
+			go func(wi *WebMapItem) {
+				var wm WebMap
+				err := GetItemData(rt, wi.Item.Id, &wm, auth)
+				if err == nil && (&wm).HasUrl(url) {
+					wi.WebMap = &wm
+					wiChan <- wi
+				} else {
+					wiChan <- nil
+				}
+
+			}(wi)
+		}
+	}
+
+	wis = []*WebMapItem{}
+	for i := 0; i < num; i++ {
+		wi := <-wiChan
+		if wi != nil {
+			wis = append(wis, wi)
+		}
+	}
+
+	return wis, nil
+}
+
+func GetAllSearchItems(rt http.RoundTripper, q string, auth *Auth) (items []*Item, err error) {
+	items = []*Item{}
+	// get first batch
+	start := 1
+	num := 100
+	sr, err := SearchItems(rt, q, start, num, auth)
+	if err != nil {
+		return nil, DisplayError("Unable to get search items", err)
+	}
+	items = append(items, sr.Results...)
+
+	// concurrently fetch other batches based on total
+	total := sr.Total
+	start += num
+	batches := make(chan []*Item)
+	numBatches := 0
+	for start <= total && start <= MaxSearchItems {
+		go func(start int) {
+			sr, _ := SearchItems(rt, q, start, num, auth)
+			if sr != nil {
+				batches <- sr.Results
+			} else {
+				batches <- nil
+			}
+		}(start)
+		numBatches++
+		start += num
+	}
+
+	for i := 0; i < numBatches; i++ {
+		is := <-batches
+		if is != nil {
+			items = append(items, is...)
+		}
+	}
+
+	return items, nil
+}
+
+func SearchItems(rt http.RoundTripper, q string, start int, num int, auth *Auth) (sr *SearchResponse, err error) {
+	params := url.Values{"f": {"json"}, "q": {q}, "start": {strconv.Itoa(start)}, "num": {strconv.Itoa(num)}}
+	if auth != nil {
+		params.Add("token", auth.AccessToken)
+	}
+	url := fmt.Sprintf("%s/search", config.PortalAPIBaseUrl)
+
+	if err = getAndUnmarshalJson(rt, url, params, &sr); err != nil {
+		return nil, err
+	}
+
+	return sr, nil
+}
+
+func GetItemData(rt http.RoundTripper, itemId string, data interface{}, auth *Auth) (err error) {
+	params := url.Values{"f": {"json"}}
+	if auth != nil {
+		params.Add("token", auth.AccessToken)
+	}
+	url := fmt.Sprintf("%s/content/items/%s/data", config.PortalAPIBaseUrl, itemId)
+
+	if err = getAndUnmarshalJson(rt, url, params, &data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetMyAGOL(rt http.RoundTripper, auth *Auth) (ma *MyAGOL, err error) {
 	selfChan := make(chan *PortalSelf)
 	userChan := make(chan *User)
@@ -154,8 +276,8 @@ func GetPortalSelf(rt http.RoundTripper, auth *Auth) (self *PortalSelf, err erro
 	return self, nil
 }
 
-func GetAllOrgUsers(rt http.RoundTripper, auth *Auth) (users []User, err error) {
-	users = []User{}
+func GetAllOrgUsers(rt http.RoundTripper, auth *Auth) (users []*User, err error) {
+	users = []*User{}
 	// get first batch
 	start := 1
 	num := 100
@@ -168,7 +290,7 @@ func GetAllOrgUsers(rt http.RoundTripper, auth *Auth) (users []User, err error) 
 	// concurrently fetch other batches based on total
 	total := ur.Total
 	start += num
-	batches := make(chan []User)
+	batches := make(chan []*User)
 	numBatches := 0
 	for start <= total {
 		go func(start int) {
