@@ -6,10 +6,9 @@ import (
 )
 
 const (
-	AuthCookie                 = "agoltools_auth"
-	baseTemplate               = "agoltools/templates/base.html"
-	headerTemplate             = "agoltools/templates/header.html"
-	unsupportedBrowserTemplate = "agoltools/templates/unsupportedbrowser.html"
+	AuthCookie     = "agoltools_auth"
+	baseTemplate   = "agoltools/templates/base.html"
+	headerTemplate = "agoltools/templates/header.html"
 )
 
 type HandlerFunc func(*Request) error

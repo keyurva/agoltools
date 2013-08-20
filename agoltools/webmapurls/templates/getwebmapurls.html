@@ -38,15 +38,18 @@
 				<div class="controls">
 					<label class="radio">
 						<input type="radio" name="for" id="fuser" value="user" checked="checked"/>
-						Search for Web Maps in My Content
+						Find Web Maps in My Content
 					</label>
-					<label class="radio muted">
-						<input type="radio" name="for" id="fuser" value="org" disabled="true"/>
-						Search for Web Maps in My Organization's Content (TODO)
-						<p class="visible-desktop visible-tablet muted">
-							Note that only content you have access to will be searched
-						</p>
-					</label>					
+					{{if .Org}}
+						<label class="radio">
+							<input type="radio" name="for" id="fuser" value="org"/>
+							Find Web Maps in My Organization's Content
+							<p class="visible-desktop visible-tablet muted">
+								Note that only content you have access to will be searched
+							</p>
+						</label>
+					{{end}}
+										
 				</div>
 			</div>
 			<div class="control-group">
@@ -66,10 +69,10 @@
 
 		<div id="desc" class="hide">
 			<p>
-				This tool searches Web Maps that reference the specified service URL.
+				This tool finds Web Maps that reference the specified service URL.
 			</p> 
 			<p>
-				You can either search for web maps within your own content or within your organization's content. 
+				You can either find web maps within your own content or within your organization's content. 
 				In the latter case, only content that you have access to will be searched.
 			</p>
 			<p>

@@ -94,6 +94,10 @@ body {
 	text-align: right;
 }
 
+.agoltools-header-row .user-info {
+	margin-right: 0.25rem;
+}
+
 @media(max-width: 767px) {
 	.agoltools-header-row .right-panel {
 		text-align: left;

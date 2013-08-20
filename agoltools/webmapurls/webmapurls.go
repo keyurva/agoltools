@@ -4,6 +4,7 @@ import (
 	"agolclient"
 	"agoltools"
 	"agoltools/auth"
+	"net/http"
 	"strings"
 )
 
@@ -17,16 +18,35 @@ const (
 )
 
 func getWebMapUrls(r *agoltools.Request) (err error) {
-	r.Data["PageTitle"] = "Get Web Maps With URL"
+	r.Data["PageTitle"] = "Find Web Maps With URL"
 
 	url := strings.ToLower(strings.Trim(r.R.FormValue("url"), " "))
 	if url == "" {
 		return r.RenderUsingBaseTemplate(getWebMapUrlsTemplate)
 	}
 
-	wmis, err := agolclient.GetUserWebMapsWithUrl(r.Transport(), url, r.Auth)
-	if err != nil {
-		return err
+	findFor := strings.ToLower(strings.Trim(r.R.FormValue("for"), " "))
+
+	var wmis []*agolclient.WebMapItem
+
+	if findFor == "org" {
+		accountId := r.OrgId()
+		if accountId == "" {
+			return &agoltools.Error{
+				Message: "This option is only available to users that belong to an organization",
+				Code:    http.StatusBadRequest,
+			}
+		}
+
+		wmis, err = agolclient.GetOrgWebMapsWithUrl(r.Transport(), accountId, url, r.Auth)
+		if err != nil {
+			return err
+		}
+	} else {
+		wmis, err = agolclient.GetUserWebMapsWithUrl(r.Transport(), url, r.Auth)
+		if err != nil {
+			return err
+		}
 	}
 
 	r.AddData(map[string]interface{}{

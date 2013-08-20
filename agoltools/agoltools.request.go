@@ -2,7 +2,6 @@ package agoltools
 
 import (
 	"agolclient"
-	"agoltools/config"
 	"appengine"
 	"appengine/urlfetch"
 	"encoding/json"
@@ -11,58 +10,58 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"reflect"
 	"time"
 )
+
+var timeoutDuration = time.Second * 60
 
 type Request struct {
 	R         *http.Request
 	W         http.ResponseWriter
 	Auth      *agolclient.Auth
 	Data      map[string]interface{}
-	context   appengine.Context
+	Context   appengine.Context
+	Cache     *Cache
 	transport *urlfetch.Transport
+	self      *agolclient.PortalSelf
+	selfChan  chan *agolclient.PortalSelf
 }
 
-var timeoutDuration = time.Second * 60
-
-var templateFuncs = template.FuncMap{
-	"safe": func(s string) template.HTML {
-		return template.HTML(s)
-	},
-	"gt": func(first, second interface{}) bool {
-		switch first.(type) {
-		case int, int8, int16, int32, int64:
-			switch second.(type) {
-			case int, int8, int16, int32, int64:
-				return reflect.ValueOf(first).Int() > reflect.ValueOf(second).Int()
-			}
-		}
-		return false
-	},
-	"eq": func(first, second interface{}) bool {
-		switch first.(type) {
-		case int, int8, int16, int32, int64:
-			switch second.(type) {
-			case int, int8, int16, int32, int64:
-				return reflect.ValueOf(first).Int() == reflect.ValueOf(second).Int()
-			}
-		}
-		return false
-	},
-	"portalUrl": func(relativeUrl string, auth *agolclient.Auth) string {
-		portalUrl := fmt.Sprintf("%s%s", config.Config.PortalAPIBaseUrl, relativeUrl)
-		if auth != nil {
-			portalUrl = fmt.Sprintf("%s?token=%s", portalUrl, auth.AccessToken)
-		}
-		return portalUrl
-	},
+func (r *Request) PortalSelf() *agolclient.PortalSelf {
+	if r.Auth == nil {
+		return nil
+	}
+	if r.self != nil {
+		return r.self
+	}
+	if r.selfChan != nil {
+		r.self = <-r.selfChan
+	}
+	return r.self
 }
 
-func (r *Request) RenderUsingBaseTemplate(templateFilePaths ...string) (err error) {
-	templates := []string{baseTemplate, headerTemplate}
-	templates = append(templates, templateFilePaths...)
-	return r.RenderTemplates(templates...)
+func (r *Request) Org() *agolclient.Org {
+	self := r.PortalSelf()
+	if self == nil {
+		return nil
+	}
+	return self.Org
+}
+
+func (r *Request) OrgUrlKey() string {
+	org := r.Org()
+	if org == nil {
+		return ""
+	}
+	return org.UrlKey
+}
+
+func (r *Request) OrgId() string {
+	org := r.Org()
+	if org == nil {
+		return ""
+	}
+	return org.Id
 }
 
 func (r *Request) RenderTemplates(templates ...string) (err error) {
@@ -79,25 +78,18 @@ func (r *Request) RenderTemplates(templates ...string) (err error) {
 	return nil
 }
 
-func (r *Request) Context() appengine.Context {
-	if r.context == nil {
-		r.context = appengine.NewContext(r.R)
-	}
-	return r.context
-}
-
 func (r *Request) LogInfof(format string, args ...interface{}) {
-	r.Context().Infof(format, args...)
+	r.Context.Infof(format, args...)
 }
 
 func (r *Request) LogErrorf(format string, args ...interface{}) {
-	r.Context().Errorf(format, args...)
+	r.Context.Errorf(format, args...)
 }
 
 func (r *Request) Transport() *urlfetch.Transport {
 	if r.transport == nil {
 		r.transport = &urlfetch.Transport{
-			Context:                       r.Context(),
+			Context:                       r.Context,
 			Deadline:                      timeoutDuration,
 			AllowInvalidServerCertificate: true,
 		}
@@ -127,27 +119,58 @@ func (r *Request) AddData(data map[string]interface{}) {
 	}
 }
 
+func (r *Request) getPortalSelfAsync() {
+	if r.Auth != nil {
+		// kick off a concurrent request to get portal self
+		r.selfChan = make(chan *agolclient.PortalSelf, 1)
+		go func() {
+			selfKey := fmt.Sprintf("self_%s", r.Auth.Username)
+			var self agolclient.PortalSelf
+			err := r.Cache.Get(selfKey, &self)
+			if err == nil {
+				r.selfChan <- &self
+				return
+			}
+
+			r.self, err = agolclient.GetPortalSelf(r.Transport(), r.Auth)
+			if err != nil {
+				r.selfChan <- nil
+			} else {
+				r.selfChan <- r.self
+				r.Cache.SetWithExpiration(selfKey, r.self, time.Minute*10)
+			}
+		}()
+	}
+}
+
 func newRequest(w http.ResponseWriter, r *http.Request) (req *Request) {
 	auth, _ := getAuthFromCookie(r)
-	return &Request{
-		R:    r,
-		W:    w,
-		Auth: auth,
-		Data: make(map[string]interface{}),
+	c := appengine.NewContext(r)
+	req = &Request{
+		R:       r,
+		W:       w,
+		Auth:    auth,
+		Data:    make(map[string]interface{}),
+		Context: c,
+		Cache:   NewCache(c),
 	}
+
+	req.getPortalSelfAsync()
+
+	return req
 }
 
 func getAuthFromCookie(r *http.Request) (auth *agolclient.Auth, err error) {
 	cookie, err := r.Cookie(AuthCookie)
 	if err != nil {
-		return
+		return nil, err
 	}
 	value, err := url.QueryUnescape(cookie.Value)
 	if err != nil {
-		return
+		return nil, err
 	}
 	if err = json.Unmarshal([]byte(value), &auth); err != nil {
-		return
+		return nil, err
 	}
 	return auth, nil
 }

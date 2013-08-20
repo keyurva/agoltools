@@ -14,7 +14,7 @@ The following tools are supported:
 * Display your ArcGIS Online information (profile info, content, groups, organization and subscription info) on a single page.
 * Add all services from an ArcGIS Server folder into your ArcGIS Online account
 * Display or download (CSV) your organization's users
-* Search Web Maps that reference a specified service URL 
+* Find Web Maps that reference a specified service URL 
 
 This application is built using [Go][go] and [Bootstrap][bootstrap]. 
 

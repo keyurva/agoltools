@@ -7,7 +7,12 @@
     
   <div class="span8 right-panel">
   	{{if .Auth}}
-  		Logged in as: <span class="focus">{{.Auth.Username}}</span>
+  		<span class="focus user-info">
+        {{.Auth.Username}}
+        {{with .OrgUrlKey}}
+          ({{.}})
+        {{end}}
+      </span>
   		|
   		<a href="/auth/signout">Sign Out</a>
 	  {{else}}
