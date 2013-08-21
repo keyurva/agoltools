@@ -49,10 +49,19 @@ func getWebMapUrls(r *agoltools.Request) (err error) {
 		}
 	}
 
+	f := strings.ToLower(strings.Trim(r.R.FormValue("f"), " "))
+	if f == "csv" {
+		r.W.Header().Set("Content-Type", "text/csv")
+		r.W.Header().Set("Content-Disposition", "inline;filename=webmaps.csv")
+		agolclient.WebMapItemsCsv(r.W, wmis, r.PortalHomeUrl())
+		return
+	}
+
 	r.AddData(map[string]interface{}{
 		"PageTitle":   "Web Maps With URL",
 		"WebMapItems": wmis,
-		"URL":         r.R.FormValue("url"),
+		"URL":         strings.Trim(r.R.FormValue("url"), " "),
+		"For":         findFor,
 	})
 
 	return r.RenderUsingBaseTemplate(webMapUrlsTemplate)

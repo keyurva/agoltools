@@ -2,6 +2,7 @@ package agoltools
 
 import (
 	"agolclient"
+	"agoltools/config"
 	"appengine"
 	"appengine/urlfetch"
 	"encoding/json"
@@ -62,6 +63,10 @@ func (r *Request) OrgId() string {
 		return ""
 	}
 	return org.Id
+}
+
+func (r *Request) PortalHomeUrl() string {
+	return config.PortalHomeUrl(r.OrgUrlKey())
 }
 
 func (r *Request) RenderTemplates(templates ...string) (err error) {

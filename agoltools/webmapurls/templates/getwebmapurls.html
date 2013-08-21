@@ -9,7 +9,7 @@
 	margin: 0;
 }
 .options {
-	padding-bottom: 1rem;
+	padding-bottom: 0.25rem;
 }
 .desc {
 	font-size: 0.9rem;
@@ -40,7 +40,7 @@
 						<input type="radio" name="for" id="fuser" value="user" checked="checked"/>
 						Find Web Maps in My Content
 					</label>
-					{{if .Org}}
+					{{if .OrgId}}
 						<label class="radio">
 							<input type="radio" name="for" id="fuser" value="org"/>
 							Find Web Maps in My Organization's Content
@@ -48,8 +48,19 @@
 								Note that only content you have access to will be searched
 							</p>
 						</label>
-					{{end}}
-										
+					{{end}}										
+				</div>
+			</div>
+			<div class="control-group options">
+				<div class="controls">
+					<label class="radio">
+						<input type="radio" name="f" id="fhtml" value="html" checked="checked"/>
+						View Web Map Details on a Web Page
+					</label>
+					<label class="radio">
+						<input type="radio" name="f" id="fcsv" value="csv"/>
+						Download Web Map Details as a CSV File
+					</label>
 				</div>
 			</div>
 			<div class="control-group">
@@ -74,6 +85,9 @@
 			<p>
 				You can either find web maps within your own content or within your organization's content. 
 				In the latter case, only content that you have access to will be searched.
+			</p>
+			<p>
+				You can view details of the web maps found on a web page or download as a CSV.
 			</p>
 			<p>
 				Note that depending on the number of web maps found it may take a few seconds to execute.

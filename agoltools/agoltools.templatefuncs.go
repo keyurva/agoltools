@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"reflect"
+	"strings"
 )
 
 var templateFuncs = template.FuncMap{
@@ -28,6 +29,11 @@ var templateFuncs = template.FuncMap{
 			switch second.(type) {
 			case int, int8, int16, int32, int64:
 				return reflect.ValueOf(first).Int() == reflect.ValueOf(second).Int()
+			}
+		case string:
+			switch second.(type) {
+			case string:
+				return strings.EqualFold(reflect.ValueOf(first).String(), reflect.ValueOf(second).String())
 			}
 		}
 		return false

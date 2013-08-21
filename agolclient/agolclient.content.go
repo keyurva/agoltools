@@ -2,7 +2,9 @@ package agolclient
 
 import (
 	"bytes"
+	"encoding/csv"
 	"fmt"
+	"io"
 	"net/url"
 	"strings"
 	"time"
@@ -69,9 +71,50 @@ func (w *WebMap) HasUrl(url string) bool {
 	return false
 }
 
+func (w *WebMap) NumLayers() int {
+	return w.NumOperationalLayers() + w.NumBaseMapLayers()
+}
+
+func (w *WebMap) NumOperationalLayers() int {
+	num := 0
+	for _, layer := range w.OperationalLayers {
+		if len(layer.Url) > 0 {
+			num++
+		}
+	}
+	return num
+}
+
+func (w *WebMap) NumBaseMapLayers() int {
+	num := 0
+	for _, layer := range w.BaseMap.BaseMapLayers {
+		if len(layer.Url) > 0 {
+			num++
+		}
+	}
+	return num
+}
+
 type WebMapItem struct {
 	*Item
 	*WebMap
+}
+
+func WebMapItemsCsv(w io.Writer, wmis []*WebMapItem, portalHomeUrl string) {
+	cw := csv.NewWriter(w)
+
+	cw.Write([]string{"Title", "Owner", "Item ID", "Last Modified", "Item URL"})
+	for _, wmi := range wmis {
+		cw.Write([]string{
+			wmi.Title,
+			wmi.Owner,
+			wmi.Id,
+			wmi.ModifiedTime().Format("January 1, 2006"),
+			fmt.Sprintf("%s/item.html?id=%s", portalHomeUrl, wmi.Id),
+		})
+	}
+
+	cw.Flush()
 }
 
 type SearchResponse struct {

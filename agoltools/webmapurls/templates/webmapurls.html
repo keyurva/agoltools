@@ -42,6 +42,38 @@
 .url-desc > p {
 	line-height: normal;
 }
+
+.for-row {
+	position: relative;
+	top: -1rem;
+	font-size: 0.9rem;
+	letter-spacing: 1px;
+}
+
+.layers-btn {
+	padding-left: 0;
+	text-decoration: none!important;
+}
+
+.layers-panel {
+	background-color: inherit;
+	margin-top: 0.25rem;
+	margin-right: 0.25rem;
+	padding-left: 0.25rem;
+	padding-bottom: 0.25rem;
+}
+
+.layer {
+	word-break: break-all;
+	font-size: 0.9rem;
+}
+
+@media(max-width: 767px) {
+	.layers-panel {
+		margin: 0.25rem;
+		padding: 0.25rem;
+	}
+}
 </style>
 
 {{end}}
@@ -49,12 +81,23 @@
 {{define "content"}}
 
 	{{$auth := .Auth}}
-	{{$portalHomeUrl := "https://www.arcgis.com/home"}}
+	{{$portalHomeUrl := .PortalHomeUrl}}
 	{{$url := .Data.URL}}
+	{{$forOrg := eq .Data.For "org"}}
+
+	<div class="row-fluid for-row">
+		<div class="span12 muted">
+			{{if $forOrg}}
+				In My Organization's Content
+			{{else}}
+				In My Content
+			{{end}}
+		</div>
+	</div>
 
 	{{with .Data.WebMapItems}}
 
-		<div id="content-panel" class="row-fluid info">
+		<div class="row-fluid info">
 			<div class="span12 focus">		
 				<div class="row-fluid">
 					<p>Web Maps ({{. | len}})</p>
@@ -80,23 +123,64 @@
 								<div class="span9 item-details">
 									<div>
 										<a href="{{$itemUrl}}">{{.Title}}</a> 
-										(<span class="meta">by</span> {{.Owner}})
+										{{if $forOrg}}
+											(<span class="meta">by</span> {{.Owner}})
+										{{end}}										
 									</div>
 									<div>{{.Snippet}}</div>
-									{{with .Tags}}
-										<div class="row-fluid">
-											<div class="span1 meta">Tags:</div>
-											<div class="span11 item-tags">
-												{{range .}}
-													{{$tagUrl := printf "%s/search.html?t=content&q=tags:%s" $portalHomeUrl .}}
-													<a class="btn btn-link" href="{{$tagUrl}}">{{.}}</a>
-												{{end}}
-											</div>
-										</div>																	
-									{{end}}
 									{{with .ModifiedTime}}
 										<div class="meta">Last Modified: {{.Format "Jan 1, 2006"}}</div>
 									{{end}}
+
+									<div class="box-rounded layers-panel">
+										<div>
+											<button agoltools-toggle="{{.Id}}-layers" class="btn btn-link layers-btn">
+												Layers ({{.NumLayers}}) <i class="icon-chevron-right"></i>
+											</button>
+										</div>
+
+										<div id="{{.Id}}-layers" class="layers hide">
+											{{if gt .NumBaseMapLayers 0}}
+												{{with .BaseMap}}
+													{{with .BaseMapLayers}}
+														<p class="meta">BaseMap Layers</p>
+														{{range .}}
+															{{with .Url}}
+																<p class="layer">
+																	<a href="{{.}}">
+																		{{if eq . $url}}
+																			<b>{{.}}</b>
+																		{{else}}
+																			{{.}}
+																		{{end}}
+																	</a>
+																</p>
+															{{end}}
+														{{end}}
+													{{end}}
+												{{end}}
+											{{end}}
+											{{if gt .NumOperationalLayers 0}}
+												{{with .OperationalLayers}}
+													<p class="meta">Operational Layers</p>
+													{{range .}}
+														{{with .Url}}
+															<p class="layer">
+																<a href="{{.}}">
+																	{{if eq . $url}}
+																		<b>{{.}}</b>
+																	{{else}}
+																		{{.}}
+																	{{end}}
+																</a>
+															</p>
+														{{end}}
+													{{end}}
+												{{end}}
+											{{end}}											
+										</div>
+									</div>
+
 								</div>
 							</div>
 						{{end}}
@@ -118,6 +202,7 @@
 {{define "moreJS"}}
 <script type="text/javascript">
 require(['agoltools'], function(agoltools) {
+	agoltools.toggler();
 });
 </script>
 {{end}}
