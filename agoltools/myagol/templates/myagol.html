@@ -209,6 +209,9 @@
 																{{with .ModifiedTime}}
 																	<div class="meta">Last Modified: {{.Format "Jan 1, 2006"}}</div>
 																{{end}}
+																{{with .Id}}
+																	<div class="meta">Item ID: {{.}}</div>
+																{{end}}
 															</div>
 														</div>
 													{{end}}

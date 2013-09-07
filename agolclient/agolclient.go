@@ -13,6 +13,70 @@ const (
 	MaxSearchItems = 10000
 )
 
+func GetUserRegisteredApps(rt http.RoundTripper, auth *Auth) (ris []*RegisteredAppItem, err error) {
+	items, err := GetUserItemsWithTypeKeyword(rt, TypeKeywordRegisteredApp, auth)
+	if err != nil {
+		return nil, DisplayError("Unable to get user's registered apps", err)
+	}
+
+	ris = []*RegisteredAppItem{}
+	rchan := make(chan *RegisteredAppItem, len(items))
+
+	for _, item := range items {
+		go func(item *Item) {
+			r, err := GetRegisteredAppInfo(rt, item.FolderId, item.Id, auth)
+			if err != nil {
+				LogError(err, true)
+				rchan <- nil
+			} else {
+				rchan <- &RegisteredAppItem{
+					Item:          item,
+					RegisteredApp: r,
+				}
+			}
+		}(item)
+	}
+
+	for _, _ = range items {
+		ris = append(ris, <-rchan)
+	}
+
+	return ris, err
+}
+
+func GetUserItemsWithTypeKeyword(rt http.RoundTripper, typeKeyword string, auth *Auth) (items []*Item, err error) {
+	fs, err := GetUserContent(rt, auth)
+	if err != nil {
+		return nil, err
+	}
+
+	items = []*Item{}
+	for _, f := range fs {
+		for _, item := range f.Items {
+			if item.HasTypeKeyword(typeKeyword) {
+				items = append(items, item)
+			}
+		}
+	}
+
+	return items, nil
+}
+
+func GetRegisteredAppInfo(rt http.RoundTripper, folderId string, itemId string, auth *Auth) (r *RegisteredApp, err error) {
+	folderUri := folderId
+	if folderUri != "" {
+		folderUri = "/" + folderUri
+	}
+	params := url.Values{"f": {"json"}, "token": {auth.AccessToken}}
+	url := fmt.Sprintf("%s/content/users/%s%s/items/%s/registeredAppInfo", config.PortalAPIBaseUrl, auth.Username, folderUri, itemId)
+
+	if err = getAndUnmarshalJson(rt, url, params, &r); err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
 func GetOrgWebMapsWithUrl(rt http.RoundTripper, accountId string, url string, auth *Auth) (wis []*WebMapItem, err error) {
 	items, err := GetAllSearchItems(rt, fmt.Sprintf(`accountid:%s type:"%s" -type:"%s"`, accountId, TypeWebMap, TypeWebMappingApplication), auth)
 	if err != nil {
@@ -249,6 +313,10 @@ func GetFolderContent(rt http.RoundTripper, folderId string, auth *Auth) (f *Fol
 	}
 
 	f.Id = folderId
+
+	for _, item := range f.Items {
+		item.FolderId = folderId
+	}
 
 	return f, nil
 }

@@ -147,12 +147,8 @@
 														{{range .}}
 															{{with .Url}}
 																<p class="layer">
-																	<a href="{{.}}">
-																		{{if eq . $url}}
-																			<b>{{.}}</b>
-																		{{else}}
-																			{{.}}
-																		{{end}}
+																	<a {{if eq . $url}}class="success"{{end}} href="{{.}}">
+																		{{.}}
 																	</a>
 																</p>
 															{{end}}
@@ -166,12 +162,8 @@
 													{{range .}}
 														{{with .Url}}
 															<p class="layer">
-																<a href="{{.}}">
-																	{{if eq . $url}}
-																		<b>{{.}}</b>
-																	{{else}}
-																		{{.}}
-																	{{end}}
+																<a {{if eq . $url}}class="success"{{end}} href="{{.}}">
+																	{{.}}
 																</a>
 															</p>
 														{{end}}

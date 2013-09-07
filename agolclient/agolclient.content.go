@@ -13,6 +13,7 @@ import (
 const (
 	TypeWebMap                = "Web Map"
 	TypeWebMappingApplication = "Web Mapping Application"
+	TypeKeywordRegisteredApp  = "Registered App"
 )
 
 type Folder struct {
@@ -26,9 +27,10 @@ type FolderContent struct {
 }
 
 type Item struct {
-	Id, Owner, Title, Type, Snippet, Thumbnail string
-	Modified                                   int64
-	Tags                                       []string
+	Id, Owner, Title, Type, Snippet, Thumbnail, FolderId string
+	Modified                                             int64
+	Tags                                                 []string
+	TypeKeywords                                         []string
 }
 
 func (i *Item) ModifiedTime() *time.Time {
@@ -44,6 +46,56 @@ func (i *Item) RelativeThumbnailUrl() string {
 		return ""
 	}
 	return fmt.Sprintf("/content/items/%s/info/%s", i.Id, i.Thumbnail)
+}
+
+func (i *Item) HasTypeKeyword(typeKeyword string) bool {
+	if i.TypeKeywords == nil {
+		return false
+	}
+	for _, t := range i.TypeKeywords {
+		if strings.EqualFold(typeKeyword, t) {
+			return true
+		}
+	}
+	return false
+}
+
+type RegisteredApp struct {
+	ItemId, Client_Id, Client_Secret, AppType string
+	Redirect_Uris                             []string
+	Registered                                int64
+}
+
+func (r *RegisteredApp) RegisteredTime() time.Time {
+	var t time.Time
+	if r.Registered != 0 {
+		t = time.Unix(0, r.Registered*int64(time.Millisecond))
+	}
+	return t
+}
+
+type RegisteredAppItem struct {
+	*Item
+	*RegisteredApp
+}
+
+func RegisteredAppItemsCsv(w io.Writer, ris []*RegisteredAppItem, portalHomeUrl string) {
+	cw := csv.NewWriter(w)
+
+	cw.Write([]string{"Title", "Item ID", "Client ID", "Client Secret", "Redirect URIs", "Registered", "Item URL"})
+	for _, ri := range ris {
+		cw.Write([]string{
+			ri.Title,
+			ri.Id,
+			ri.Client_Id,
+			ri.Client_Secret,
+			strings.Join(ri.Redirect_Uris, ", "),
+			ri.RegisteredTime().Format("January 1, 2006"),
+			fmt.Sprintf("%s/item.html?id=%s", portalHomeUrl, ri.Id),
+		})
+	}
+
+	cw.Flush()
 }
 
 type WebMap struct {

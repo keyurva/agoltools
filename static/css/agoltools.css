@@ -47,6 +47,12 @@ body {
 	padding-right: 0.2rem;
 }
 
+a.success:hover, a.success:hover {
+	color: #fff;
+	text-decoration: none;
+	font-weight: bold;
+}
+
 .failure {
 	font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
 	color: #f5f5f5;

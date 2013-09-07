@@ -12,9 +12,10 @@ If you'd like to see a particular tool implemented you can describe and add it [
 The following tools are supported:
 
 * View your ArcGIS Online information (profile info, content, groups, organization and subscription info) on a single page.
-* Add all services from an ArcGIS Server folder into your ArcGIS Online account
-* View or download (CSV) your organization's users
+* Add all services from an ArcGIS Server folder into your ArcGIS Online account.
+* View or download (CSV) your organization's users.
 * Find Web Maps that reference a specified service URL. View or download (CSV) details of the web maps found.
+* View or download information on all your registered apps.
 
 This application is built using [Go][go] and [Bootstrap][bootstrap]. 
 
