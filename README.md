@@ -16,6 +16,7 @@ The following tools are supported:
 * View or download (CSV) your organization's users.
 * Find Web Maps that reference a specified service URL. View or download (CSV) details of the web maps found.
 * View or download information on all your registered apps.
+* View or download login information on all your registered apps.
 
 This application is built using [Go][go] and [Bootstrap][bootstrap]. 
 
