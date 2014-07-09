@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -97,6 +99,111 @@ func RegisteredAppItemsCsv(w io.Writer, ris []*RegisteredAppItem, portalHomeUrl 
 
 	cw.Flush()
 }
+
+type RegisteredAppLoginStatsReq struct {
+	StartTime time.Time
+	EndTime   time.Time
+	Period    string
+}
+
+type RegisteredAppLoginStats struct {
+	StartTime int64
+	EndTime   int64
+	Data      []*RegisteredAppLoginStatsData
+}
+
+func (r *RegisteredAppLoginStats) StartTimeTime() time.Time {
+	var t time.Time
+	if r.StartTime != 0 {
+		t = time.Unix(0, r.StartTime*int64(time.Millisecond))
+	}
+	return t
+}
+
+func (r *RegisteredAppLoginStats) EndTimeTime() time.Time {
+	var t time.Time
+	if r.EndTime != 0 {
+		t = time.Unix(0, r.EndTime*int64(time.Millisecond))
+	}
+	return t
+}
+
+func (r *RegisteredAppLoginStats) NumLogins() int {
+	n := 0
+
+	if r.Data != nil {
+		for _, d := range r.Data {
+			if d.Num != nil {
+				for _, nums := range d.Num {
+					num, _ := strconv.Atoi(nums[1])
+					n = n + num
+				}
+			}
+		}
+	}
+
+	return n
+}
+
+func (r *RegisteredAppLoginStats) NumOrgs() int {
+	orgs := make(map[string]bool)
+
+	if r.Data != nil {
+		for _, d := range r.Data {
+			if d.UserOrgId != "" {
+				orgs[d.UserOrgId] = true
+			}
+		}
+	}
+
+	return len(orgs)
+}
+
+type RegisteredAppLoginStatsData struct {
+	UserOrgId string
+	Num       [][]string
+}
+
+type RegisteredAppItemLoginStats struct {
+	*Item
+	*RegisteredApp
+	*RegisteredAppLoginStats
+}
+
+func RegisteredAppItemsLoginStatsCsv(w io.Writer, ris []*RegisteredAppItemLoginStats, portalHomeUrl string) {
+	cw := csv.NewWriter(w)
+
+	cw.Write([]string{"Application", "Users", "Logins", "Organizations", "Owner", "Item ID", "Item URL"})
+	for _, ri := range ris {
+		cw.Write([]string{
+			ri.Title,
+			strconv.Itoa(len(ri.Data)),
+			strconv.Itoa(ri.NumLogins()),
+			strconv.Itoa(ri.NumOrgs()),
+			ri.Owner,
+			ri.Id,
+			fmt.Sprintf("%s/item.html?id=%s", portalHomeUrl, ri.Id),
+		})
+	}
+
+	cw.Flush()
+}
+
+type RegisteredAppItemLoginStatsArray []*RegisteredAppItemLoginStats
+
+func (r RegisteredAppItemLoginStatsArray) Len() int { return len(r) }
+
+func (r RegisteredAppItemLoginStatsArray) Swap(i, j int) { r[i], r[j] = r[j], r[i] }
+
+type RegisteredAppItemLoginStatsByNum struct {
+	RegisteredAppItemLoginStatsArray
+}
+
+func (r *RegisteredAppItemLoginStatsByNum) Less(i, j int) bool {
+	return len(r.RegisteredAppItemLoginStatsArray[i].Data) >= len(r.RegisteredAppItemLoginStatsArray[j].Data)
+}
+
+var _ sort.Interface = (*RegisteredAppItemLoginStatsByNum)(nil)
 
 type WebMap struct {
 	OperationalLayers []struct {

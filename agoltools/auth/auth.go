@@ -43,23 +43,15 @@ const (
 
 func signIn(r *agoltools.Request) (err error) {
 	authUrl := portalAuthorizeUrl
-	orgAuthUrlTemplate := portalOrgAuthorizeUrlTemplate
 
 	if redirect := r.R.FormValue("redirect"); strings.HasPrefix(redirect, "/") {
 		redirect = url.QueryEscape(redirect)
 		authUrl += "&state=" + redirect
-		orgAuthUrlTemplate += "&state=" + redirect
 	}
 
-	r.AddData(map[string]interface{}{
-		"PageTitle":                     "Sign in to ArcGIS Online",
-		"PortalAuthorizeUrl":            authUrl,
-		"PortalOrgAuthorizeUrlTemplate": orgAuthUrlTemplate,
-		"PortalOrgDomain":               config.Config.PortalOrgDomain,
-		"OrgKeyTemplate":                config.OrgKeyTemplate,
-	})
+	r.Redirect(authUrl)
 
-	return r.RenderUsingBaseTemplate(signInTemplate)
+	return nil
 }
 
 func callback(r *agoltools.Request) (err error) {

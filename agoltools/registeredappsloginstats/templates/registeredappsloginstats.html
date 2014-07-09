@@ -1,0 +1,133 @@
+{{define "moreStyles"}}
+
+{{"<!--[if !IE]><!-->" | safe}} 
+<link href="/css/table-responsive.css" rel="stylesheet">
+<style>
+@media(max-width: 767px)  {
+	td:nth-of-type(1):before { content: "Application"; }
+	td:nth-of-type(2):before { content: "Users"; }
+	td:nth-of-type(3):before { content: "Logins"; }
+	td:nth-of-type(4):before { content: "Organizations"; }
+	td:nth-of-type(5):before { content: "Public Users"; }
+}
+</style>
+{{"<!--<![endif]-->" | safe}}
+
+<style>
+.no-info {
+	padding: 1rem;
+}
+.info {
+	font-size: 1rem;
+	margin-bottom: 1rem;
+}
+
+.num-apps {
+	padding: 0.25rem;
+	font-weight: bold;
+	font-size: 1.1rem;
+}
+
+table {
+	font-size: 1rem;
+}
+
+th.header { 
+    background-image: url(/img/bg.gif);     
+    cursor: pointer; 
+    background-repeat: no-repeat; 
+    background-position: center left;
+    padding-left: 1.5rem; 
+}
+
+th.headerSortDown { 
+    background-image: url(/img/desc.gif);
+}
+
+th.headerSortUp { 
+    background-image: url(/img/asc.gif); 
+}
+
+.stats-period {
+    padding: 0.5rem;
+}
+
+.stats-date {
+    font-weight: bold;
+}
+
+</style>
+
+{{end}}
+
+{{define "content"}}
+
+	{{$auth := .Auth}}
+	{{$portalHomeUrl := .PortalHomeUrl}}
+
+	{{with .Data.RegisteredAppLoginStatsItems}}
+
+		{{$first := index . 0}}
+
+		<div class="row-fluid info">
+			<div class="span12">	
+
+				<div class="row-fluid stats-period muted">
+					Login Stats from 
+					<span class="stats-date">{{with $first.StartTimeTime.UTC}}{{.Format "Jan 2, 2006 3:04 pm"}}{{end}}</span>
+					to 
+					<span class="stats-date">{{with $first.EndTimeTime.UTC}}{{.Format "Jan 2, 2006 3:04 pm"}}{{end}}</span> 
+					(UTC)
+				</div>	
+
+				<div class="row-fluid text-center focus">
+					<div class="num-apps">Registered Apps ({{. | len}})</div>
+				</div>
+
+				<div class="row-fluid">
+					<div class="span12">
+						<table id="appsTable" class="table table-striped tablesorter">
+							<thead>
+								<tr>
+									<th>Application</th>
+									<th>Users</th>
+									<th>Logins</th>
+									<th>Organizations</th>
+								</tr>
+							</thead>
+							<tbody>
+								{{range .}}
+									<tr>
+										<td>{{.Title}}</td>
+										<td>{{.Data | len}}</td>
+										<td>{{.NumLogins}}</td>
+										<td>{{.NumOrgs}}</td>
+									</tr>
+								{{end}}
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+	{{else}}
+		<div class="row-fluid">
+			<div class="span12 focus no-info">
+				No Registered Apps were found.
+			</div>
+		</div>
+	{{end}}
+
+{{end}}
+
+{{define "moreJS"}}
+<script type="text/javascript">
+require(['jquery.tablesorter'], function() {
+	var $appsTable = $("#appsTable");
+
+	$appsTable.tablesorter({sortList: [[1,1]]});
+});
+</script>
+{{end}}

@@ -1,0 +1,106 @@
+{{define "moreStyles"}}
+<style>
+.tool-form {
+	padding: 1rem;
+}
+.example {
+	font-size: 0.8rem;
+	padding: 0;
+	margin: 0;
+}
+.options {
+	padding-bottom: 0.25rem;
+}
+.desc {
+	font-size: 0.9rem;
+	line-height: 1.5rem;
+	padding: 0.5rem;
+}
+#info {
+	padding-left: 0;
+	text-decoration: none;
+}
+.period {
+	font-size: 0.9rem;
+	font-weight: bold;
+}
+</style>
+{{end}}
+
+{{define "content"}}
+<div class="row-fluid">
+	<div class="span10">
+		<form class="box-rounded tool-form" action="/registeredappsloginstats" method="post">
+			<div class="control-group options">
+				<div class="controls">
+					<label class="radio">
+						<input type="radio" name="f" id="fhtml" value="html" checked="checked"/>
+						View My Registered Apps Login Stats on a Web Page
+					</label>
+					<label class="radio">
+						<input type="radio" name="f" id="fcsv" value="csv"/>
+						Download My Registered App Login Stats as a CSV File
+					</label>
+				</div>
+			</div>
+			<div class="control-group options">
+				<div class="period">Get Stats For</div>
+				<div class="controls">
+					<label class="radio">
+						<input type="radio" name="period" value="d" checked="checked"/>
+						Today
+					</label>
+					<label class="radio">
+						<input type="radio" name="period" value="w"/>
+						Last Week
+					</label>
+					<label class="radio">
+						<input type="radio" name="period" value="m"/>
+						Last Month
+					</label>
+					<label class="radio">
+						<input type="radio" name="period" value="6m"/>
+						Last 6 Months
+					</label>
+				</div>
+			</div>
+			<div class="control-group">
+				<div class="controls">
+					<button type="submit" class="btn">Get My Registered Apps Login Stats</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="row-fluid">
+	<div class="span10 box-rounded desc">
+		<div>
+			<button id="info" agoltools-toggle="desc" class="btn btn-link">Tool Info <i class="icon-chevron-right"></i></button>
+		</div>
+
+		<div id="desc" class="hide">
+			<p>
+				This tool provides login information on all your registered apps.
+			</p>
+			<p>
+				You can view your registered app login details on a web page or download as a CSV.
+			</p>
+			<p>
+				Note that depending on the number of registered apps found it may take a few seconds to execute.
+			</p>
+		</div>
+
+	</div>
+</div>
+{{end}}
+
+{{define "moreJS"}}
+<script type="text/javascript">
+require(['agoltools'], function(agoltools) {
+	agoltools.toggler();
+
+	$("#url").focus();
+});
+</script>
+{{end}}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -12,6 +13,68 @@ const (
 	// arbitrary limit on max search items returned
 	MaxSearchItems = 10000
 )
+
+func GetUserRegisteredAppsLoginStats(rt http.RoundTripper, auth *Auth, req *RegisteredAppLoginStatsReq) (ris []*RegisteredAppItemLoginStats, err error) {
+	items, err := GetUserItemsWithTypeKeyword(rt, TypeKeywordRegisteredApp, auth)
+	if err != nil {
+		return nil, DisplayError("Unable to get user's registered apps", err)
+	}
+
+	ris = []*RegisteredAppItemLoginStats{}
+	rchan := make(chan *RegisteredAppItemLoginStats, len(items))
+
+	for _, item := range items {
+		go func(item *Item) {
+			r, err := GetRegisteredAppInfo(rt, item.FolderId, item.Id, auth)
+			if err != nil {
+				LogError(err, true)
+				rchan <- nil
+			} else {
+				rl, err := GetRegisteredLoginStats(rt, auth, r.Client_Id, req)
+				if err != nil {
+					LogError(err, true)
+					rchan <- nil
+				} else {
+					rchan <- &RegisteredAppItemLoginStats{
+						Item:                    item,
+						RegisteredApp:           r,
+						RegisteredAppLoginStats: rl,
+					}
+				}
+			}
+		}(item)
+	}
+
+	for _, _ = range items {
+		ri := <-rchan
+		if ri != nil {
+			ris = append(ris, ri)
+		}
+	}
+
+	sort.Sort(&RegisteredAppItemLoginStatsByNum{ris})
+
+	return ris, err
+}
+
+func GetRegisteredLoginStats(rt http.RoundTripper, auth *Auth, appId string, req *RegisteredAppLoginStatsReq) (r *RegisteredAppLoginStats, err error) {
+	params := url.Values{
+		"f":         {"json"},
+		"token":     {auth.AccessToken},
+		"startTime": {strconv.FormatInt(req.StartTime.UnixNano()/1e6, 10)},
+		"endTime":   {strconv.FormatInt(req.EndTime.UnixNano()/1e6, 10)},
+		"period":    {req.Period},
+		"appId":     {appId},
+		"vars":      {"num"}, "stype": {"apploginprovider"}, "etype": {"svcusg"},
+	}
+	url := fmt.Sprintf("%s/portals/self/usage", config.PortalAPIBaseUrl)
+
+	if err = getAndUnmarshalJson(rt, url, params, &r); err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
 
 func GetUserRegisteredApps(rt http.RoundTripper, auth *Auth) (ris []*RegisteredAppItem, err error) {
 	items, err := GetUserItemsWithTypeKeyword(rt, TypeKeywordRegisteredApp, auth)
@@ -505,5 +568,5 @@ var (
 	ProdConfig = &Config{
 		PortalAPIBaseUrl: "https://www.arcgis.com/sharing/rest",
 	}
-	config = DevExtConfig
+	config = ProdConfig
 )
