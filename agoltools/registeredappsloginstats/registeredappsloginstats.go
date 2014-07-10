@@ -63,6 +63,10 @@ func createRegisteredAppLoginStatsReq(period string) *agolclient.RegisteredAppLo
 	} else if period == "w" {
 		req.StartTime = midnight.Add(-7 * 24 * time.Hour)
 		req.Period = "1w"
+	} else if period == "y" {
+		req.EndTime = midnight.Add(-24 * time.Hour)
+		req.StartTime = midnight.Add(-2 * 24 * time.Hour)
+		req.Period = "24h"
 	} else {
 		req.StartTime = midnight.Add(-24 * time.Hour)
 		req.Period = "24h"
